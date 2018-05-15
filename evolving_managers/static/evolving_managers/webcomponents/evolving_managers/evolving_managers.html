@@ -1,0 +1,67 @@
+<link
+    rel="import"
+    href="/static/bower_components/polymer/polymer.html" />
+<link
+    rel="import"
+    href="/static/otree-redwood/webcomponents/redwood-period/redwood-period.html">
+<link
+    rel="import"
+	href="/static/otree-redwood/webcomponents/redwood-decision/redwood-decision.html">
+
+<dom-module id="redwood-test">
+	<template>
+		<redwood-period></redwood-period>
+
+		<!--<redwood-channel
+  			id="ordersChannel"
+ 			channel="orders">
+		</redwood-channel>
+
+		<button on-click="sendOrder">Send Order</button>
+
+		 -->
+		<redwood-decision
+			initial-decision="[[ initialDecision ]]"
+			my-decision="{{ myDecision }}"
+			other-decision="{{ otherDecision }}"
+			max-per-second="10"
+		></redwood-decision>
+		<input
+		    type="range"
+		    min="0"
+		    max="100"
+		    step="1"
+		    value="[[ initialDecision ]]"
+           	on-change="_inputValueChanged">
+		<span>Other Decision: [[ otherprofit ]]</span>
+	</template>
+	<script>
+		Polymer({
+			is: 'redwood-test',
+			properties: {
+				initialDecision: Number,
+				myDecision: {
+					type: Number,
+					observer: 'myDecisionObserver'
+				},
+				otherDecision: Number,
+				myprofit: {
+					type: Number,
+					computed: 'computeProfit(myDecision, otherDecision)'
+				},
+				otherprofit: {
+					type: Number,
+					computed: 'computeProfit(otherDecision, myDecision)'
+				}
+			},
+			_inputValueChanged(e) {
+				this.myDecision = e.target.value;
+				console.log(this.myDecision)
+			},
+			
+			computeProfit(myDecision, otherDecision) {
+				return this.otherDecision + 2;
+			}
+		})
+	</script>
+</dom-module>

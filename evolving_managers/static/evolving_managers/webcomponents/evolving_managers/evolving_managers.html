@@ -8,7 +8,7 @@
     rel="import"
 	href="/static/otree-redwood/webcomponents/redwood-decision/redwood-decision.html">
 
-<dom-module id="redwood-test">
+<dom-module id="evolving-managers">
 	<template>
 		<redwood-period></redwood-period>
 
@@ -29,15 +29,17 @@
 		<input
 		    type="range"
 		    min="0"
-		    max="100"
-		    step="1"
+		    max="1"
+		    step=".01"
 		    value="[[ initialDecision ]]"
            	on-change="_inputValueChanged">
-		<span>Other Decision: [[ otherprofit ]]</span>
+		<span>Other Decision: [[ otherDecision ]]</span>
+		<span>My Profit: [[ myProfit ]]</span>
+		<span>Objective Function: [[ objectiveProfit ]]</span>
 	</template>
 	<script>
 		Polymer({
-			is: 'redwood-test',
+			is: 'evolving-managers',
 			properties: {
 				initialDecision: Number,
 				myDecision: {
@@ -45,23 +47,38 @@
 					observer: 'myDecisionObserver'
 				},
 				otherDecision: Number,
-				myprofit: {
+				myProfit: {
 					type: Number,
 					computed: 'computeProfit(myDecision, otherDecision)'
 				},
-				otherprofit: {
+				otherProfit: {
 					type: Number,
 					computed: 'computeProfit(otherDecision, myDecision)'
-				}
+				},
+				objectiveProfit: {
+					type: Number,
+					computed: 'computeObjectiveFunction(myDecision, otherDecision)'
+				},
 			},
 			_inputValueChanged(e) {
 				this.myDecision = e.target.value;
 				console.log(this.myDecision)
+				console.log(this.objectiveProfit)
 			},
 			
 			computeProfit(myDecision, otherDecision) {
-				return this.otherDecision + 2;
-			}
+				return (this.myDecision)*(parseInt(1)-(parseInt(this.myDecision)+parseInt(this.myDecision)));
+			},
+
+			computeObjectiveFunction(myDecision, otherDecision) {
+				return (parseInt(5)*parseInt(this.myDecision)*(parseInt(1)-(parseInt(this.myDecision)+parseInt(this.myDecision))));
+			},
+					
+
+				//parseInt(this.otherDecision) + parseInt(this.myDecision);
+				
+				// S(1*(parseInt(1)-(parseInt(this.otherDecision)+parseInt(this.myDecision))))
+//O(xi,X)=S(Ai) xi (Ai-X)
 		})
 	</script>
 </dom-module>

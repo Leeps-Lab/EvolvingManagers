@@ -13,7 +13,7 @@ Your app description
 
 
 class Constants(BaseConstants):
-    name_in_url = 'redwood_test'
+    name_in_url = 'evolving_managers'
     players_per_group = 2 
     num_rounds = 1
 
@@ -63,5 +63,5 @@ class Player(BasePlayer):
     	return 0
 
     def other_decision(self, initial_decision):
-        return initial_decision + 5
+        return initial_decision
 

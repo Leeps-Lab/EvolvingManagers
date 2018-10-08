@@ -1,0 +1,87 @@
+<link
+    rel="import"
+    href="/static/bower_components/polymer/polymer.html" />
+<link
+    rel="import"
+    href="/static/otree-redwood/webcomponents/redwood-period/redwood-period.html">
+<link
+    rel="import"
+	href="/static/otree-redwood/webcomponents/redwood-decision/redwood-decision.html">
+
+<dom-module id="evolving-managers">
+	<template>
+		<redwood-period></redwood-period>
+
+		<!--<redwood-channel
+  			id="ordersChannel"
+ 			channel="orders">
+		</redwood-channel>
+
+		<button on-click="sendOrder">Send Order</button>
+
+		 -->
+		<redwood-decision
+			initial-decision="[[ initialDecision ]]"
+			my-decision="{{ myDecision }}"
+			other-decision="{{ otherDecision }}"
+			max-per-second="10"
+		></redwood-decision>
+		<input
+		    type="range"
+		    min="0"
+		    max="1"
+		    step=".01"
+		    value="[[ initialDecision ]]"
+           	on-change="_inputValueChanged">
+		<span>Other Decision: [[ otherDecision ]]</span>
+		<span>My Profit: [[ myProfit ]]</span>
+		<span>Objective Function: [[ objectiveProfit ]]</span>
+	</template>
+	<script>
+		Polymer({
+			is: 'evolving-managers',
+			properties: {
+				initialDecision: Number,
+				myDecision: {
+					type: Number,
+					observer: 'myDecisionObserver'
+				},
+				otherDecision: Number,
+				myProfit: {
+					type: Number,
+					computed: 'computeProfit(myDecision, otherDecision)'
+				},
+				otherProfit: {
+					type: Number,
+					computed: 'computeProfit(otherDecision, myDecision)'
+				},
+				objectiveProfit: {
+					type: Number,
+					computed: 'computeObjectiveFunction(myDecision, otherDecision)'
+				},
+			},
+			_inputValueChanged(e) {
+				this.myDecision = e.target.value;
+				console.log(this.myDecision)
+				console.log(this.objectiveProfit)
+				console.log(this.myProfit)
+			},
+			
+			computeProfit(myDecision, otherDecision) {
+				return (this.myDecision)*(parseInt(1)-(parseInt(this.myDecision)+parseInt(this.myDecision)));
+			},
+
+			computeObjectiveFunction(myDecision, otherDecision) {
+				return parseFloat(0.005)*parseFloat(this.otherDecision),
+
+				// (parseFloat(0.05)* parseFloat(this.myDecision)*(parseFloat(1)-(parseFloat(this.myDecision)+parseFloat(this.myDecision))));
+			},
+					
+
+				//parseInt(this.otherDecision) + parseInt(this.myDecision);
+				
+				// S(1*(parseInt(1)-(parseInt(this.otherDecision)+parseInt(this.myDecision))))
+//O(xi,X)=S(Ai) xi (Ai-X)
+		})
+	</script>
+</dom-module>

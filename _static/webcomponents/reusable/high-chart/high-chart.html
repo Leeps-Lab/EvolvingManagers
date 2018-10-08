@@ -1,0 +1,126 @@
+<link rel="import" href="/static/bower_components/polymer/polymer.html"/>
+
+<link rel="import" href="/static/otree-redwood/webcomponents/redwood-period/redwood-period.html">
+
+
+<dom-module id="high-chart">
+	<template>
+		<style>
+
+			:host {
+				display: block;
+			}
+
+		</style>
+
+        <redwood-period
+	        on-period-start="_handlePeriodStart"
+	        on-period-end="_handlePeriodEnd">
+        </redwood-period>
+		<div id="chart"></div>
+
+	</template>
+
+	<script>
+		Polymer({
+			is: 'high-chart',
+			properties: {
+				title: {
+					type: String,
+				},
+				series: {
+					type: Array,
+					value: () => { return [] },
+				},
+				xAxis: {
+					type: Object,
+					value: () => { return {
+						min: 0,
+						max: 1,
+						title: { text: 'xAxis' },
+						labels: { enabled: true },
+						plotLines: [{
+							value: 0,
+							width: 1,
+							color: '#ccd6eb',
+							zIndex: 100,
+						},
+						{
+							value: 1,
+							width: 1,
+							color: '#ccd6eb',
+							zIndex: 100,
+						}],
+					}},
+				},
+				yAxis: {
+					type: Object,
+					value: () => { return {
+						title: { text: 'yAxis' },
+						labels: { enabled: true },
+						min: 0,
+						max: 1,
+					}},
+				},
+				plotOptions: {
+					type: Object,
+					value: () => { return {
+						line: {marker: {enabled: false}},
+						area: {marker: {enabled: false}},
+						series: {
+							states: {
+								hover: {
+									enabled: false,
+								}
+							}
+					   }
+					}},
+				},
+				legend: {
+					type: Object,
+					value: () => { return {
+						align: 'right',
+						verticalAlign: 'top',
+						floating: true,
+						y: 15,
+					}},
+				},
+			},
+			ready() {
+				this.async(this._initHighchart.bind(this), 1);
+			},
+			// sets up payoff over time graph
+			_initHighchart() {
+				this.chart = Highcharts.chart({
+					chart: {
+						animation: false,
+						renderTo: this.$.chart,
+						enabled: true,
+						width: this.offsetWidth,
+						height: this.offsetHeight,
+					},
+					title: { text: this.title },
+					exporting: { enabled: false },
+					tooltip: { enabled: false },
+					credits: { enabled: false },
+					xAxis: this.xAxis,
+					yAxis: this.yAxis,
+					plotOptions: this.plotOptions,
+					series: this.series,
+					legend: this.legend,
+				});
+			},
+			_handlePeriodStart() {
+				this.start_time = performance.now();
+				this._animationID = window.requestAnimationFrame(this._updateGraph.bind(this));
+			},
+			_handlePeriodEnd() {
+				window.cancelAnimationFrame(this._animationID);
+			},
+			// updates current payoff value every 50 ms
+			_updateGraph(timestamp) {
+				this._animationID = window.requestAnimationFrame(this._updateGraph.bind(this));
+			}
+		})
+	</script>
+</dom-module>

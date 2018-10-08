@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script
+            src="/static/bower_components/webcomponentsjs/webcomponents-lite.min.js">
+        </script>
+        <link
+            rel="import"
+            href="/static/webcomponents/app/imperfect-monitoring/imperfect-monitoring.html">
+        <link
+            rel="import"
+            href="/static/otree-redwood/webcomponents/redwood-debug/redwood-debug.html">
+    </head>
+    <body>
+        <script src="//code.highcharts.com/stock/highstock.js"></script>
+        <script src="/static/otree/js/jquery.min.js"></script>
+        <script>
+            var oTree = oTree || {};
+            (function() {
+                oTree.session = "demo";
+                oTree.subsession = 1;
+                oTree.round = 1;
+                oTree.group = 1;
+                oTree.role = 'demo';
+                oTree.participantCode = 'demo';
+                oTree.appName = "imperfect-monitoring";
+                oTree.idInGroup = 1;
+                oTree.debug = true;
+            })();
+        </script>
+        <imperfect-monitoring
+            row-labels='["Cooperate", "Defect"]'
+            payoff-matrix=
+            '[
+                [100, 100],
+                [0, 0],
+                [125, 125],
+                [25, 25]
+            ]'
+            probability-matrix=
+            '[
+                [0.4, 0.4],
+                [0.6, 0.6],
+                [0.6, 0.6],
+                [0.8, 0.8]
+            ]'
+            subperiod-length='6'
+            num-subperiods='10'
+            initial-decision='0'
+            display-average-a-graph
+            display-average-b-graph
+            display-average-a-b-graph
+            >
+       </imperfect-monitoring>
+       <redwood-debug></redwood-debug>
+    </body>
+</html>

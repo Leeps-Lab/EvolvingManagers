@@ -169,6 +169,12 @@ SESSION_CONFIGS = [
         'num_demo_participants': 2,
         'app_sequence': ['continuous_double_auction', 'payment_info'],
     },
+    {
+        'name': 'evolving_managers',
+        'display_name': "Evolving Managers",
+        'num_demo_participants': 2,
+        'app_sequence': ['evolving_managers', 'payment_info'],
+    },
 ]
 
 # anything you put after the below line will override

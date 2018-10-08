@@ -64,6 +64,7 @@
 				this.myDecision = e.target.value;
 				console.log(this.myDecision)
 				console.log(this.objectiveProfit)
+				console.log(this.myProfit)
 			},
 			
 			computeProfit(myDecision, otherDecision) {
@@ -71,7 +72,9 @@
 			},
 
 			computeObjectiveFunction(myDecision, otherDecision) {
-				return (parseInt(5)*parseInt(this.myDecision)*(parseInt(1)-(parseInt(this.myDecision)+parseInt(this.myDecision))));
+				return parseFloat(0.005)*parseFloat(this.otherDecision),
+
+				// (parseFloat(0.05)* parseFloat(this.myDecision)*(parseFloat(1)-(parseFloat(this.myDecision)+parseFloat(this.myDecision))));
 			},
 					
 

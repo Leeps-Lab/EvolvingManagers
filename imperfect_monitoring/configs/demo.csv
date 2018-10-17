@@ -1,5 +1,0 @@
-displayed_subperiods,subperiod_length,rest_length,seconds_per_tick,display_average_a_graph,display_average_b_graph,display_average_ab_graph,num_subperiods,pi1(AGood),pi2(AGood),pi1(ABad),pi2(ABad),pi1(BGood),pi2(BGood),pi1(BBad),pi2(BBad),p1(AA),p2(AA),p1(AB),p2(AB),p1(BA),p2(BA),p1(BB),p2(BB)
-10,6,2,1,TRUE,TRUE,FALSE,20,100,100,0,0,125,125,25,25,0.4,0.4,0.6,0.6,0.6,0.6,0.8,0.8
-10,10,3,1,TRUE,TRUE,FALSE,10,100,100,0,0,125,125,25,25,0.4,0.4,0.6,0.6,0.6,0.6,0.8,0.8
-10,6,10,1,TRUE,TRUE,FALSE,15,100,100,0,0,125,125,25,25,0.4,0.4,0.6,0.6,0.6,0.6,0.8,0.8
-10,2,6,0.5,FALSE,FALSE,TRUE,25,100,100,0,0,125,125,25,25,0.4,0.4,0.6,0.6,0.6,0.6,0.8,0.8

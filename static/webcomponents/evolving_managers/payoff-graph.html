@@ -1,0 +1,128 @@
+<script src="colors.js"></script>
+
+<dom-module id='payoff-graph'>
+<template>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <canvas id='canvas'></canvas>
+</template>
+<script>
+    Polymer({
+        is: 'payoff-graph',
+        properties: {
+            maxPayoff: {
+                type: Number,
+            },
+            duration: {
+                type: Number,
+            },
+            myPayoff: {
+                type: Number,
+                observer: '_addPayoffToHistory',
+            },
+            _payoffHistory: {
+                type: Array,
+                value: () => [],
+            },
+        },
+        ready() {
+            setTimeout(() => {
+                this.canvas = this.$.canvas;
+                this.width = this.canvas.clientWidth;
+                this.height = this.canvas.clientHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.yMin = 0 - this.maxPayoff * 0.1;
+                this.yMax = this.maxPayoff * 1.05;
+                this.yRange = this.yMax - this.yMin;
+                this.yScale = this.height / this.yRange;
+
+                this.ctx = this.canvas.getContext('2d');
+            });
+        },
+        roundStart() {
+            window.setTimeout(() => {
+                this.start_time = performance.now();
+
+                this.xMin = this.start_time;
+                this.xMax = this.xMin + this.duration * 1000;
+                this.xRange = this.xMax - this.xMin;
+                this.xScale = this.width / this.xRange;
+
+                this.last_time = this.start_time;
+
+                requestAnimationFrame(this._tick.bind(this));
+            });
+        },
+        _transformContext() {
+            // changes bounds and scale of context so that x goes from xmin to xmax
+            // and y goes from ymin to ymax
+            this.ctx.scale(this.xScale, -this.yScale);
+            this.ctx.translate(-this.xMin, -this.yMax)
+        },
+        _tick(now) {
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this._drawPayoffHistory(now);
+            this._drawXAxis();
+
+            if (now > this.start_time + this.duration * 1000) {
+                return;
+            }
+            requestAnimationFrame(this._tick.bind(this));
+        },
+        _drawPayoffHistory(now) {
+            const ctx = this.ctx;
+
+            ctx.save();
+            ctx.save();
+            this._transformContext();
+
+            const payoffHistory = this.get('_payoffHistory');
+
+            ctx.beginPath();
+            for (let i = 0; i < payoffHistory.length - 1; i++) {
+                const {payoff: payoff, time: cur_time} = payoffHistory[i];
+                const {time: next_time} = payoffHistory[i + 1];
+
+                ctx.rect(cur_time, 0, next_time - cur_time, payoff);
+            }
+
+            const {payoff: payoff, time: time} = payoffHistory[payoffHistory.length - 1];
+            ctx.rect(time, 0, now - time, payoff);
+
+            ctx.restore();
+
+            ctx.fillStyle = MY_COLOR;
+            ctx.fill();
+
+            ctx.restore();
+        },
+        _drawXAxis() {
+            const ctx = this.ctx;
+
+            ctx.save();
+
+            const y = this.yMax * this.yScale
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.width, y);
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+
+            ctx.restore();
+        },
+        _addPayoffToHistory(payoff) {
+            if (payoff) {
+                this.push('_payoffHistory', {
+                    payoff: payoff,
+                    time: performance.now()
+                });
+            }
+        }
+    });
+</script>

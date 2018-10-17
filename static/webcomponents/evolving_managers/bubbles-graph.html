@@ -1,0 +1,263 @@
+<!-- lots of this is stolen from https://www.html5canvastutorials.com/labs/html5-canvas-graphing-an-equation/ -->
+
+<script src="colors.js"></script>
+
+<dom-module id='bubbles-graph'>
+<template>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <canvas id='canvas'></canvas>
+</template>
+<script>
+    Polymer({
+        is: 'bubbles-graph',
+        properties: {
+            maxPayoff: {
+                type: Number,
+            },
+            myDecision: {
+                type: Number,
+                observer: '_redrawGraph',
+            },
+            otherDecisions: {
+                type: Array,
+            },
+            payoffFunction: {
+                type: Object,
+            },
+            enablePayoffLandscape: {
+                type: Boolean,
+                value: false,
+            },
+            // configuration property for how others' bubbles are displayed
+            // 3 options
+            //     'none': no bubbles are shown for other players
+            //     'strategy': just shows everyone's strategy, without showing their payoff
+            //     'payoff': shows everyone else's payoffs as well as their strategy
+            othersBubbles: {
+                type: String,
+            }
+        },
+        observers: [
+            '_redrawGraph(otherDecisions)',
+        ],
+        ready() {
+            setTimeout(() => {
+                this.canvas = this.$.canvas;
+                this.width = this.canvas.clientWidth;
+                this.height = this.canvas.clientHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.xMin = -0.06;
+                this.xMax = 1.02;
+                this.xRange = this.xMax - this.xMin;
+                this.yMin = 0 - this.maxPayoff * 0.1;
+                this.yMax = this.maxPayoff * 1.05;
+                this.yRange = this.yMax - this.yMin;
+
+                this.xScale = this.width / this.xRange;
+                this.yScale = this.height / this.yRange;
+
+                this.ctx = this.canvas.getContext('2d');
+
+                this._drawXAxis();
+                this._drawYAxis();
+            });
+        },
+        roundStart() {
+            setTimeout(this._redrawGraph.bind(this));
+        },
+        _redrawGraph() {
+            if (!this.ctx) {
+                return;
+            }
+
+            this.ctx.clearRect(0, 0, this.width, this.height);
+            this._drawXAxis();
+            this._drawYAxis();
+            if (this.enablePayoffLandscape) {
+                this._drawPayoffLandscape();
+            }
+            if (this.othersBubbles !== 'none') {
+                this._drawOthersBubbles();
+            }
+            this._drawMyDecision();
+        },
+        _transformContext() {
+            // changes bounds and scale of context so that x goes from xmin to xmax
+            // and y goes from ymin to ymax
+            this.ctx.scale(this.xScale, -this.yScale);
+            this.ctx.translate(-this.xMin, -this.yMax)
+        },
+        _drawPayoffLandscape() {
+            const ctx = this.ctx;
+
+            const payoffFunction = this.get('payoffFunction');
+            const otherDecisions = this.get('otherDecisions');
+
+            ctx.save();
+            ctx.save();
+            this._transformContext();
+            ctx.beginPath();
+
+            const numSamples = this.width;
+            const interval = this.xMax / numSamples;
+            ctx.moveTo(0, payoffFunction(0, otherDecisions));
+            for(let x = 0 + interval; x < 1; x += interval) {
+                const y = payoffFunction(x, otherDecisions);
+                ctx.lineTo(x, y);
+            }
+
+            ctx.restore();
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        },
+        _drawOthersBubbles() {
+            const ctx = this.ctx;
+
+            const payoffFunction = this.get('payoffFunction');
+            const otherDecisions = this.get('otherDecisions');
+
+            ctx.save();
+
+            const radius = 8;
+            for(let i = 0; i < otherDecisions.length; i++) {
+                let payoff = 0;
+                if (this.othersBubbles === 'payoff') {
+                    let otherDecisionsForOpponent = otherDecisions.slice();
+                    otherDecisionsForOpponent.splice(i, 1, this.myDecision);
+                    payoff = payoffFunction(otherDecisions[i], otherDecisionsForOpponent);
+                }
+                ctx.beginPath();
+                const x = (otherDecisions[i] - this.xMin) * this.xScale;
+                const y = (this.yMax - payoff) * this.yScale;
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = OTHER_COLORS[i];
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        },
+        _drawMyDecision() {
+            const ctx = this.ctx;
+
+            ctx.save();
+
+            ctx.save();
+            this._transformContext();
+            ctx.beginPath();
+            ctx.moveTo(this.myDecision, 0);
+            ctx.lineTo(this.myDecision, this.yMax);
+            ctx.restore();
+            ctx.strokeStyle = MY_COLOR;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const payoffFunction = this.get('payoffFunction');
+            const otherDecisions = this.get('otherDecisions');
+
+            const radius = 8;
+            const myPayoff = payoffFunction(this.myDecision, otherDecisions);
+            const x = (this.myDecision - this.xMin) * this.xScale;
+            const y = (this.yMax - myPayoff) * this.yScale;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.restore();
+        },
+        _drawXAxis() {
+            const ctx = this.ctx;
+            ctx.save();
+
+            ctx.save();
+            ctx.beginPath();
+            this._transformContext();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(1, 0);
+            ctx.restore();
+            ctx.stroke()
+
+            const tickInterval = 0.1;
+            const tickWidth = 10;
+            const tickStartY = this.yMax * this.yScale;
+            const tickEndY = tickStartY + tickWidth;
+
+            ctx.beginPath();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            let curTick = 0;
+            while (curTick <= 1) {
+                let x = (curTick - this.xMin) * this.xScale;
+                ctx.moveTo(x, tickStartY);
+                ctx.lineTo(x, tickEndY);
+                ctx.fillText(curTick.toFixed(1), x, tickEndY + 3)
+                curTick += tickInterval;
+            }
+            ctx.stroke();
+
+            ctx.restore();
+        },
+        _drawYAxis() {
+            const ctx = this.ctx;
+            ctx.save();
+
+            ctx.save();
+            this._transformContext();
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, this.yMax);
+            ctx.restore();
+            ctx.stroke();
+
+            const tickInterval = this._getYTickInterval();
+            const tickWidth = 10;
+            const tickStartX = -this.xMin * this.xScale;
+            const tickEndX = tickStartX - tickWidth;
+
+            ctx.beginPath();
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
+            let curTick = 0;
+            while (curTick < this.yMax) {
+                let y = (this.yMax - curTick) * this.yScale;
+                ctx.moveTo(tickStartX, y);
+                ctx.lineTo(tickEndX, y);
+                ctx.fillText(curTick, tickEndX - 3, y + 2);
+                curTick += tickInterval;
+            }
+            ctx.stroke();
+
+            ctx.restore();
+        },
+        _getYTickInterval() {
+            const maxNumTicks = 12;
+
+            if (this.yMax <= maxNumTicks) {
+                return 1;
+            }
+            if (this.yMax / 5 <= maxNumTicks) {
+                return 5;
+            }
+
+            let interval = 10;
+            while (this.yMax / interval > maxNumTicks) {
+                interval += 10;
+            }
+            return interval;
+        }
+    });
+</script>
+</dom-module>

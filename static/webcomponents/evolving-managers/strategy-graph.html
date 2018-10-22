@@ -86,18 +86,23 @@
             const ctx = this.ctx;
             ctx.save();
 
-            const numOtherDecisions = decisionHistory[0].otherDecisions.length;
+            // get max length of otherDecisions arrays
+            const numOtherDecisions = Math.max.apply(null, decisionHistory.map(e => e.otherDecisions.length));
 
             // for each decision in otherDecisions
             for (let i = 0; i < numOtherDecisions; i++) {
+                // there may be some empty otherDecisions at the start of decision history, skip past those
+                let start = 0;
+                while (decisionHistory[start].otherDecisions.length - 1 < i) start++;
+
                 ctx.save();
                 this._transformContext();
 
                 ctx.beginPath();
                 // move to the first point in decision history
-                ctx.moveTo(decisionHistory[0].time, decisionHistory[0].otherDecisions[i]);
+                ctx.moveTo(decisionHistory[start].time, decisionHistory[start].otherDecisions[i]);
 
-                for (let j = 0; j < decisionHistory.length - 1; j++) {
+                for (let j = start; j < decisionHistory.length - 1; j++) {
                     nextTime = decisionHistory[j + 1].time;
                     currentDecision = decisionHistory[j].otherDecisions[i];
                     nextDecision = decisionHistory[j + 1].otherDecisions[i];

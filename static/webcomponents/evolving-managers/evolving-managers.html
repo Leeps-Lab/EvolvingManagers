@@ -1,6 +1,9 @@
 <link
     rel="import"
-    href="/static/bower_components/polymer/polymer.html" />
+	href="/static/bower_components/polymer/polymer.html" />
+<link
+    rel="import"
+    href="/static/otree-redwood/webcomponents/redwood-channel/redwood-channel.html">
 <link
     rel="import"
     href="/static/otree-redwood/webcomponents/redwood-period/redwood-period.html">
@@ -9,128 +12,126 @@
 	href="/static/otree-redwood/webcomponents/redwood-decision/redwood-decision.html">
 <link
     rel="import"
-	href="/static/webcomponents/evolving-managers/polymer-bubbles.html">
-
-
+	href="/static/webcomponents/evolving-managers/polymer-bubbles/polymer-bubbles.html">
+	
 <dom-module id="evolving-managers">
-	<template>
-		<div>
-			<polymer-bubbles
-				max-payoff='400'
-				other-decisions='[[ _otherDecisions ]]'
-				my-decision='{{ _myDecision }}'
-				payoff-function='[[ _payoffFunction ]]'
-				duration='120'
-				others-bubbles='decision'
-				>
-			</polymer-bubbles>
-		</div>
-		<div>
-			<button on-tap='_randomizeOthers'>randomize other decisions</button>
-			&nbsp;
-			<span>my decision: [[ _myDecision ]]</span>
-		</div>
-		<redwood-period></redwood-period>
-		<redwood-decision
-					initial-decision="[[ initialDecision ]]"
-					my-decision="{{ myDecision }}"
-					other-decision="{{ otherDecision }}"
-					max-per-second="10"
-		></redwood-decision>
-		<input
-			type="range"
-			min="0"
-			max="1"
-			step=".01"
-			value="[[ initialDecision ]]"
-				on-change="_inputValueChanged">
-		<span>Other Decision: [[ otherDecision ]]</span>
-		<span>My Profit: [[ myProfit ]]</span>
-		<span>Objective Function: [[ objectiveProfit ]]</span>
-	</template>
-	<script>
-		Polymer({
-			is: 'evolving-managers',
-			properties: {
-				_myDecision: {
-					type: Number,
-					value: 0.1,
-				},
-				_otherDecisions: {
-					type: Array,
-					value: () => [0.1, 0.4, 0.5, 1],
-				},
-				_evolveConst: {
-					type: Number,
-					value: 1.0,
-				},
-				_payoffFunction: {
-					type: Object,
-					value: function() {
-						return this.getPayoff;
-					},
-				},
-			},
-			ready() {
-				this.$$('polymer-bubbles').roundStart();
-			},
-			getPayoff(myDecision, otherDecisions) {
-				const a = 1; // ask fernando again?
-				const b = 1; // more constants
-				const c = 3; // some constant for marginal cost
-				const avg = otherDecisions.concat([myDecision]).reduce((a, b) => a + b) / (otherDecisions.length + 1);
-				a - c - b(myDecision + )
+<template>
+	<div>
+		<polymer-bubbles
+			max-payoff='1'
+			other-decisions='[[ otherDecisions ]]'
+			my-decision='{{ myDecision }}'
+			payoff-function='[[ _payoffFunction ]]'
+			duration='120'
+			enable-payoff-landscape
+			others-bubbles='payoff'
+			>
+		</polymer-bubbles>
+	</div>
 
+	<otree-constants id="constants"></otree-constants>
+
+	<div>
+		<button on-tap='_randomizeOthers' type="button">Randomize other decisions</button>
+		&nbsp;
+		<span>my decision: [[ myDecision ]]</span>
+	</div>
+
+	<!-- <redwood-period
+		running="{{ _isPeriodRunning }}"
+		on-period-start="_onPeriodStart"
+		one-period-end="_onPeriodEnd">
+	</redwood-period> -->
+
+	<redwood-decision
+		initial-decision="[[ initialDecision ]]"
+		my-decision="{{ myDecision }}"
+		group-decisions="{{ groupDecisions }}"
+		max-per-second="10">
+	</redwood-decision>
+
+</template>
+
+<script>
+	Polymer({
+		is: 'evolving-managers',
+		properties: {
+			initialDecision: {
+				type: Number,
+			},
+			myDecision: {
+				type: Number
+			},
+			groupDecisions: {
+				type: Object,
+			},
+			evolveVar: {
+				type: Number
+			},
+			otherDecisions: {
+				type: Array,
+				computed: "_getOtherDecisions(groupDecisions)"
+			},
+			periodLength: Number,
+			_isPeriodRunning: {
+				type: Boolean
+			},
+			_payoffFunction: {
+				type: Object,
+				value: function() {
+					return () => 0;
+				},
+			},
+		},
+		ready() {
+			this.$$('polymer-bubbles').roundStart();
+			this.myDecision = .5;
+
+			var avg = this._getOtherDecisions;
+
+			const evolve = this.evolveVar;
+			this._payoffFunction = function(myDecision, otherDecisions) {
+				const avg = otherDecisions[0];
+				console.log(avg);
+				var payoff = evolve * myDecision * (evolve - myDecision - avg);
+				// console.log(otherDecisions);
+				// console.log(myDecision);
+				// var payoff = evolve * myDecision;
+				return payoff;
 				// return 400 / (1 + Math.pow(avg - myDecision, 2));
-
-			},
-			_randomizeOthers() {
-				let decisions = [];
-				for (let i = 0; i < 4; i++){
-					decisions.push(Math.random());
+			};
+		},
+		// getPositions() {
+		// 	var decisions = {};
+		// 	for (var i=0; i<Object.keys(this.groupDecisions).length; i++) {
+		// 		var highest = 0;
+		// 		for (var pcode in this.groupDecisions) {
+		// 			if(this.groupDecisions[pcode] >= highest) {
+		// 				highest = pcode;
+		// 			}
+		// 		}
+		// 		decisions[pcode] = i;
+		// 	}
+		// 	return decisions;
+		// },
+		_randomizeOthers(groupDecisions) {
+			let decisions = [];
+			for (let i = 0; i < 1; i++){
+				decisions.push(Math.random());
+			}
+			this.set('groupDecisions', decisions);
+		},
+		_getOtherDecisions(groupDecisions) {
+			var decisions = [];
+			for (var pcode in groupDecisions) {
+				if(this.$.constants.participantCode != pcode) {
+					decisions.push(groupDecisions[pcode]);
 				}
-				this.set('_otherDecisions', decisions);
-			},
-		})
-	</script>
-<!-- 	
-	<script>
-		Polymer({
-			is: 'evolving-managers',
-			properties: {
-				initialDecision: Number,
-				myDecision: {
-					type: Number,
-					observer: 'myDecisionObserver'
-				},
-				otherDecision: Number,
-				myProfit: {
-					type: Number,
-					computed: 'computeProfit(myDecision, otherDecision)'
-				},
-				otherProfit: {
-					type: Number,
-					computed: 'computeProfit(otherDecision, myDecision)'
-				},
-				objectiveProfit: {
-					type: Number,
-					computed: 'computeObjectiveFunction(myDecision, otherDecision)'
-				},
-			},
-			_inputValueChanged(e) {
-				this.myDecision = e.target.value;
-				console.log(this.myDecision)
-				console.log(this.objectiveProfit)
-				console.log(this.myProfit)
-			},
-			
-			computeProfit(myDecision, otherDecision) {
-				return (this.myDecision)*(parseInt(1)-(parseInt(this.myDecision)+parseInt(this.myDecision)));
-			},
+			}
+			return decisions;
+			// return Object.keys(groupDecisions).filter(pcode => pcode != this.$.constants.participantCode).sort().map(pcode => groupDecisions[pcode])
+		}
+	})
+</script>
 
-			computeObjectiveFunction(myDecision, otherDecision) {
-				return parseFloat(0.005)*parseFloat(this.otherDecision)
-			}			
-		})
-	</script> -->
 </dom-module>

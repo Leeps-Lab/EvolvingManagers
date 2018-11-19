@@ -2,6 +2,8 @@ from otree.api import (
     models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, currency_range
 )
+import csv, random, math
+
 
 from otree_redwood.models import DecisionGroup
 
@@ -15,7 +17,7 @@ Your app description
 class Constants(BaseConstants):
     name_in_url = 'evolving_managers'
     players_per_group = 2 
-    num_rounds = 1
+    num_rounds = 100
 
 
 class Subsession(BaseSubsession):
@@ -24,8 +26,26 @@ class Subsession(BaseSubsession):
 
 class Group(DecisionGroup):
 
+    def when_all_players_ready(self):
+        super().when_all_players_ready()
+
+        if self.round_number == 1:
+            for player in self.get_players():
+                player.participant.vars["evolve"] = 1
+        else:
+            for player in self.get_players():
+                last_group = player.in_round(self.round_number - 1).group
+                last_decision = last_group.group_decisions[player.participant.code]
+                player.participant.vars["evolve"] = 1
+
+        self.save()
+
     def num_subperiods(self):
         return None
+
+    def num_rounds(self):
+        return 100 #change later to be a variable
+    
 
 '''
 class Group(RedwoodGroup):
@@ -57,11 +77,16 @@ class Group(RedwoodGroup):
 
 '''
 
+
 class Player(BasePlayer):
-    
+
     def initial_decision(self):
-    	return 0
+    	return .66
 
     def other_decision(self, initial_decision):
         return initial_decision
+    
+    def evolve_var(self):
+        return self.participant.vars["evolve"] if "evolve" in self.participant.vars else 1
+
 

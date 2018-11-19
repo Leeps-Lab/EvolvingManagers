@@ -4,10 +4,25 @@ from .models import Constants
 
 from otree_redwood.models import DecisionGroup
 
+class Instructions(Page):
 
-class MyPage(Page):
-    pass
+    def is_displayed(self):
+        return self.round_number == 1
+    
+    def vars_for_template(self):
+        return {
+            'instructions_link': self.session.config['instructions_link'],
+        }
 
+class Decision(Page):
+
+    def is_displayed(self):
+        return self.round_number <= self.group.num_rounds()
+
+    # def vars_for_template(self):
+    #     return {
+        
+    #     }
 
 class ResultsWaitPage(WaitPage):
 
@@ -16,11 +31,12 @@ class ResultsWaitPage(WaitPage):
 
 
 class Results(Page):
-    pass
 
+    def is_displayed(self):
+        return self.round_number <= self.group.num_rounds()
 
 page_sequence = [
-    MyPage,
+    Decision,
     ResultsWaitPage,
     Results
 ]

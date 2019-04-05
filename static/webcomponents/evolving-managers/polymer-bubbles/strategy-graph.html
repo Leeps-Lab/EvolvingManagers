@@ -1,0 +1,172 @@
+<script src="colors.js"></script>
+
+<dom-module id='strategy-graph'>
+<template>
+    <style>
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <canvas id='canvas'></canvas>
+</template>
+<script>
+    Polymer({
+        is: 'strategy-graph',
+        properties: {
+            myDecision: {
+                type: Number,
+                observer: '_addDecisionToHistory',
+            },
+            otherDecisions: {
+                type: Number,
+            },
+            duration: {
+                type: Number,
+            },
+            _decisionHistory: {
+                type: Array,
+                value: () => [],
+            },
+        },
+        observers: [
+            '_addDecisionToHistory(otherDecisions.splices)',
+        ],
+        ready() {
+            setTimeout(() => {
+                this.canvas = this.$.canvas;
+                this.width = this.canvas.clientWidth;
+                this.height = this.canvas.clientHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+
+                this.yMin = 0;
+                this.yMax = 1;
+                this.yRange = this.yMax - this.yMin;
+                this.yScale = this.height / this.yRange;
+
+                this.ctx = this.canvas.getContext('2d');
+            });
+        },
+        roundStart() {
+            setTimeout(() => {
+                this.start_time = performance.now();
+
+                this.xMin = this.start_time;
+                this.xMax = this.xMin + this.duration * 1000;
+                this.xRange = this.xMax - this.xMin;
+                this.xScale = this.width / this.xRange;
+
+                this.last_time = this.start_time;
+
+                requestAnimationFrame(this._tick.bind(this));
+            });
+        },
+        _tick(now) {
+            const decisionHistory = this.get('_decisionHistory');
+            if (decisionHistory.length) {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                this._drawOtherDecisions(decisionHistory, now);
+                this._drawMyDecisions(decisionHistory, now);
+            }
+
+            if (now > this.start_time + this.duration * 1000) {
+                return;
+            }
+            requestAnimationFrame(this._tick.bind(this));
+        },
+        _transformContext() {
+            // changes bounds and scale of context so that x goes from xmin to xmax
+            // and y goes from ymin to ymax
+            this.ctx.scale(this.xScale, -this.yScale);
+            this.ctx.translate(-this.xMin, -this.yMax)
+        },
+        _drawOtherDecisions(decisionHistory, now) {
+
+            const ctx = this.ctx;
+            ctx.save();
+
+            // get max length of otherDecisions arrays
+            const numOtherDecisions = Math.max.apply(null, decisionHistory.map(e => e.otherDecisions.length));
+
+            // for each decision in otherDecisions
+            for (let i = 0; i < numOtherDecisions; i++) {
+                // there may be some empty otherDecisions at the start of decision history, skip past those
+                let start = 0;
+                while (decisionHistory[start].otherDecisions.length - 1 < i) start++;
+
+                ctx.save();
+                this._transformContext();
+
+                ctx.beginPath();
+                // move to the first point in decision history
+                ctx.moveTo(decisionHistory[start].time, decisionHistory[start].otherDecisions[i]);
+
+                for (let j = start; j < decisionHistory.length - 1; j++) {
+                    nextTime = decisionHistory[j + 1].time;
+                    currentDecision = decisionHistory[j].otherDecisions[i];
+                    nextDecision = decisionHistory[j + 1].otherDecisions[i];
+                    // draw horizontal segment
+                    ctx.lineTo(nextTime, currentDecision);
+                    // draw vertical connection and move to next decision value in history
+                    ctx.lineTo(nextTime, nextDecision);
+                }
+
+                // draw final segment to current time
+                ctx.lineTo(now, decisionHistory[decisionHistory.length - 1].otherDecisions[i]);
+
+                ctx.restore();
+
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = OTHER_COLORS[i];
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        },
+        _drawMyDecisions(decisionHistory, now) {
+            const ctx = this.ctx;
+
+            ctx.save();
+            ctx.save();
+            this._transformContext();
+            ctx.beginPath();
+            ctx.moveTo(decisionHistory[0].time, decisionHistory[0].myDecision);
+
+            for (let j = 0; j < decisionHistory.length - 1; j++) {
+                nextTime = decisionHistory[j + 1].time;
+                currentDecision = decisionHistory[j].myDecision;
+                nextDecision = decisionHistory[j + 1].myDecision;
+                ctx.lineTo(nextTime, currentDecision);
+                ctx.lineTo(nextTime, nextDecision);
+            }
+
+            ctx.lineTo(now, decisionHistory[decisionHistory.length - 1].myDecision);
+
+            ctx.restore();
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = MY_COLOR;
+            ctx.stroke();
+
+            ctx.restore();
+        },
+        _addSegment(nextTime, currentDecision, nextDecision) {
+                const nextX = (nextTime - this.xMin) * this.xScale;
+                const curY = (this.yMax - currentDecision) * this.yScale;
+                const nextY = (this.yMax - nextDecision) * this.yScale;
+                this.ctx.lineTo(nextX, curY);
+                this.ctx.lineTo(nextX, nextY);
+        },
+        _addDecisionToHistory() {
+            let otherDecisions = this.get('otherDecisions');
+            if (this.myDecision && otherDecisions) {
+                this.push('_decisionHistory', {
+                    myDecision: this.myDecision,
+                    otherDecisions: otherDecisions,
+                    time: performance.now()
+                });
+            }
+        },
+    });
+</script>

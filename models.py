@@ -47,6 +47,20 @@ class Group(DecisionGroup):
         return 100 #change later to be a variable
     
 
+    #Adding constants inputted from config .csv file
+    def parse_config(config_file):
+    with open('evolving_managers/configs/' + config_file) as f:
+        rows = list(csv.DictReader(f))
+
+    rounds = []
+    for row in rows:
+        rounds.append({
+            'period_length': int(row['period_length']),
+            'evolve': int(row['evolve']),
+            'c': int(row['c']),
+        })
+    return rounds
+
 '''
 class Group(RedwoodGroup):
 
@@ -77,7 +91,6 @@ class Group(RedwoodGroup):
 
 '''
 
-
 class Player(BasePlayer):
 
     def initial_decision(self):
@@ -89,4 +102,4 @@ class Player(BasePlayer):
     def evolve_var(self):
         return self.participant.vars["evolve"] if "evolve" in self.participant.vars else 1
 
-
+# add all vars here from bimatrix all Constants 

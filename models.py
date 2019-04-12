@@ -13,6 +13,19 @@ doc = """
 Your app description
 """
 
+#Adding constants inputted from config .csv file
+def parse_config(config_file):
+    with open('evolving_managers/configs/' + config_file) as f:
+        rows = list(csv.DictReader(f))
+
+    rounds = []
+    for row in rows:
+        rounds.append({
+            'period_length': int(row['period_length']),
+            'evolve': float(row['evolve']),
+            'c': float(row['c']),
+        })
+    return rounds
 
 class Constants(BaseConstants):
     name_in_url = 'evolving_managers'
@@ -21,7 +34,11 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    pass
+    def evolve(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['evolve']
+    def c(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['c']
+    # add any other constant vars per round here
 
 
 class Group(DecisionGroup):
@@ -44,22 +61,11 @@ class Group(DecisionGroup):
         return None
 
     def num_rounds(self):
-        return 100 #change later to be a variable
+        return  len(parse_config(self.session.config['config_file']))
     
-
-    #Adding constants inputted from config .csv file
-    def parse_config(config_file):
-    with open('evolving_managers/configs/' + config_file) as f:
-        rows = list(csv.DictReader(f))
-
-    rounds = []
-    for row in rows:
-        rounds.append({
-            'period_length': int(row['period_length']),
-            'evolve': int(row['evolve']),
-            'c': int(row['c']),
-        })
-    return rounds
+    def period_length(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['period_length']
+    
 
 '''
 class Group(RedwoodGroup):
@@ -101,5 +107,8 @@ class Player(BasePlayer):
     
     def evolve_var(self):
         return self.participant.vars["evolve"] if "evolve" in self.participant.vars else 1
+
+    def a_var(self):
+        pass
 
 # add all vars here from bimatrix all Constants 

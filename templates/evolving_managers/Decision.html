@@ -34,8 +34,13 @@
 
      <evolving-managers
          initial-decision="1"
-         evolve-var='{{ player.evolve_var }}'>
+         evolve-var='{{ player.evolve_var }}'
+         period-length='{{ player.group.period_length }}'
+         evolve='{{ player.subsession.evolve }}'
+         c='{{ player.subsession.c }}'>
      </evolving-managers>
+
+     <!-- the how add var above. - ask about output once configs are completed  ed --
 {% endblock %}
 
-<!-- the how add var above. - ask about output once configs are completed  ed -->
+

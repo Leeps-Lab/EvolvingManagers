@@ -41,12 +41,6 @@
 		<span>my decision: [[ myDecision ]]</span>
 	</div>
 
-	<!-- <redwood-period
-		running="{{ _isPeriodRunning }}"
-		on-period-start="_onPeriodStart"
-		one-period-end="_onPeriodEnd">
-	</redwood-period> -->
-
 	<redwood-decision
 		initial-decision="[[ initialDecision ]]"
 		my-decision="{{ myDecision }}"
@@ -86,6 +80,14 @@
 					return () => 0;
 				},
 			},
+			evolve: {
+				type: Number,
+			},
+			c: {
+				type: Number,
+			},
+
+			////Add vars
 		},
 		ready() {
 			this.myDecision = 0.5;
@@ -94,46 +96,22 @@
 
 			const evolve = this.evolveVar;
 			console.log(evolve);
+			const c = this.c;
+			console.log(c);
+
 			this._payoffFunction = function(myDecision, otherDecisions) {
 				// Payoff function line (change based on A)
-				const c = 3;
+				// FIND 1-MY.D-O.D
+				// MY.P = MY.D(1-MY.D-O.D)
 				const avg = otherDecisions[0];
 				var scalar = c * Math.pow(evolve, -2);
-				//console.log(avg);
-
-				// S(A) with A = 1 for evolving A
-				//var scalar_evolve = 1 * Math.pow(evolve, -2);
-
-				//const evolved = 0.2*(scalar_evolve)*(myDecision)*(1 - myDecision - otherDecisions)
 
 				// Payoff with evolved A
 				var payoff = scalar * myDecision * (evolve - myDecision);
 
-				//var payoff = scalar * myDecision * (1-avg)
-
-				// CHANGE THIS ***********
-				// ***** INTO THIS ******
-				// O(xi,X)=S(Ai) xi (Ai-X)
-				// console.log(otherDecisions);
-				// console.log(myDecision);
-				// var payoff = evolve * myDecision;
 				return payoff;
-				// return 400 / (1 + Math.pow(avg - myDecision, 2));
 			};
 		},
-		// getPositions() {
-		// 	var decisions = {};
-		// 	for (var i=0; i<Object.keys(this.groupDecisions).length; i++) {
-		// 		var highest = 0;
-		// 		for (var pcode in this.groupDecisions) {
-		// 			if(this.groupDecisions[pcode] >= highest) {
-		// 				highest = pcode;
-		// 			}
-		// 		}
-		// 		decisions[pcode] = i;
-		// 	}
-		// 	return decisions;
-		// },
 		_randomizeOthers(groupDecisions) {
 			let decisions = [];
 			for (let i = 0; i < 1; i++){

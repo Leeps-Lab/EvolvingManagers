@@ -33,16 +33,16 @@ class Results(Page):
         return self.round_number <= self.group.num_rounds()
 
     def get_output_table_header():
-    return [
-        'session_code',
-        'subsession_id',
-        'id_in_subsession',
-        'tick',
-        'p1_strategy',
-        'p2_strategy',
-        'p1_code',
-        'p2_code',
-    ]
+        return [
+            'session_code',
+            'subsession_id',
+            'id_in_subsession',
+            'tick',
+            'p1_strategy',
+            'p2_strategy',
+            'p1_code',
+            'p2_code',
+            ]
 
     def get_output_table(events):
         if not events:

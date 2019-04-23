@@ -106,6 +106,9 @@
             ctx.moveTo(0, payoffFunction(0, otherDecisions));
             for(let x = 0 + interval; x < 1; x += interval) {
                 const y = payoffFunction(x, otherDecisions);
+                if (y < 0) {
+                    break;
+                }
                 ctx.lineTo(x, y);
             }
 
@@ -131,14 +134,16 @@
                     otherDecisionsForOpponent.splice(i, 1, this.myDecision);
                     payoff = payoffFunction(otherDecisions[i], otherDecisionsForOpponent);
                 }
-                ctx.beginPath();
-                const x = (otherDecisions[i] - this.xMin) * this.xScale;
-                const y = (this.yMax - payoff) * this.yScale;
-                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                if (payoff > 0) {
+                    ctx.beginPath();
+                    const x = (otherDecisions[i] - this.xMin) * this.xScale;
+                    const y = (this.yMax - payoff) * this.yScale;
+                    ctx.arc(x, y, radius, 0, 2 * Math.PI);
 
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = OTHER_COLORS[i];
-                ctx.stroke();
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = OTHER_COLORS[i];
+                    ctx.stroke();
+                }
             }
 
             ctx.restore();
@@ -163,12 +168,14 @@
 
             const radius = 8;
             const myPayoff = payoffFunction(this.myDecision, otherDecisions);
-            const x = (this.myDecision - this.xMin) * this.xScale;
-            const y = (this.yMax - myPayoff) * this.yScale;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, 2 * Math.PI);
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            if (myPayoff > 0) {
+                const x = (this.myDecision - this.xMin) * this.xScale;
+                const y = (this.yMax - myPayoff) * this.yScale;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } 
 
             ctx.restore();
         },

@@ -35,11 +35,11 @@
 
 	<otree-constants id="constants"></otree-constants>
 
-	<div>
+	<!-- <div>
 		<button on-tap='_randomizeOthers' type="button">Randomize other decisions</button>
 		&nbsp;
 		<span>my decision: [[ myDecision ]]</span>
-	</div>
+	</div> -->
 
 	<redwood-decision
 		initial-decision="[[ initialDecision ]]"
@@ -107,18 +107,20 @@
 				var scalar = c * Math.pow(evolve, -2);
 
 				// Payoff with evolved A
-				var payoff = scalar * myDecision * (evolve - myDecision);
+				// var payoff = scalar * myDecision * (evolve - myDecision);
+
+				var payoff = myDecision * (1 - myDecision - otherDecisions);
 
 				return payoff;
 			};
 		},
-		_randomizeOthers(groupDecisions) {
-			let decisions = [];
-			for (let i = 0; i < 1; i++){
-				decisions.push(Math.random());
-			}
-			this.set('groupDecisions', decisions);
-		},
+		// _randomizeOthers(groupDecisions) {
+		// 	let decisions = [];
+		// 	for (let i = 0; i < 1; i++){
+		// 		decisions.push(Math.random());
+		// 	}
+		// 	this.set('groupDecisions', decisions);
+		// },
 		_getOtherDecisions(groupDecisions) {
 			var decisions = [];
 			for (var pcode in groupDecisions) {

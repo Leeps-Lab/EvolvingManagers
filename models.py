@@ -47,17 +47,6 @@ class Group(DecisionGroup):
     def when_all_players_ready(self):
         super().when_all_players_ready()
 
-        if self.round_number == 1:
-            for player in self.get_players():
-                player.participant.vars["evolve"] = 1
-        else:
-            for player in self.get_players():
-                last_group = player.in_round(self.round_number - 1).group
-                last_decision = last_group.group_decisions[player.participant.code]
-                player.participant.vars["evolve"] = 1
-
-        self.save()
-
     def num_subperiods(self):
         return None
 
@@ -72,18 +61,37 @@ class Group(DecisionGroup):
 
 class Player(BasePlayer):
 
+    _a_var = models.FloatField(null=True)
+
+    def a_var(self):
+        self.refresh_from_db()
+        if self._a_var:
+            return self._a_var
+
+        if self.round_number == 1:
+            self._a_var = random.uniform(0, 2)
+        else:
+            last_player = self.in_round(self.round_number - 1)
+            last_round_payoffs = [p.payoff for p in last_player.group.get_players()]
+            last_round_payoffs.sort()
+            # payoff_position = 0 if you got best payoff in last round, 1 if you got worst
+            payoff_position = last_round_payoffs.index(last_player.payoff) / (len(last_round_payoffs) - 1)
+            evolve_prob = payoff_position * 0.2
+            last_a = last_player.a_var()
+            if random.random() < evolve_prob:
+                self._a_var = last_a + random.uniform(-0.1, 0.1)
+            else:
+                self._a_var = last_a
+        
+        self.save(update_fields=['_a_var'])
+        return self._a_var
+
     def initial_decision(self):
-    	return .66
+    	return 0.66
 
     def other_decision(self, initial_decision):
         return initial_decision
     
-    def evolve_var(self):
-        return self.participant.vars["evolve"] if "evolve" in self.participant.vars else 1
-
-    def a_var(self):
-        pass
-
     def set_payoff(self):
         decisions = list(Event.objects.filter(
                 channel='group_decisions',
@@ -119,8 +127,8 @@ class Player(BasePlayer):
             avg = sum(d.value.values()) / len(d.value)
 
             flow_payoff = (scalar * (myDecision * (1 - myDecision - avg)));
-            print("flowPay")
-            print(flow_payoff)
+            # print("flowPay")
+            # print(flow_payoff)
 
 
             if i + 1 < len(decisions):
@@ -128,13 +136,13 @@ class Player(BasePlayer):
             else:
                 next_change_time = period_end.timestamp
             decision_length = (next_change_time - d.timestamp).total_seconds()
-            print("decisionlength")
-            print(decision_length)
+            # print("decisionlength")
+            # print(decision_length)
             payoff += decision_length * flow_payoff
-            print("payoff")
-            print(payoff)
-            print("perioddurationSEC")
-            print(period_duration.total_seconds)
+            # print("payoff")
+            # print(payoff)
+            # print("perioddurationSEC")
+            # print(period_duration.total_seconds)
         return payoff*100 / period_duration.total_seconds()
 
 

@@ -22,7 +22,8 @@ class Decision(Page):
 class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
-        pass
+        for player in self.group.get_players():
+            player.set_payoff()
 
     def is_displayed(self):
         return self.round_number <= self.group.num_rounds()

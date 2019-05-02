@@ -26,7 +26,7 @@
 			other-decisions='[[ otherDecisions ]]'
 			my-decision='{{ myDecision }}'
 			payoff-function='[[ _payoffFunction ]]'
-			duration='120'
+			duration= '[[ periodLength ]]'
 			enable-payoff-landscape
 			others-bubbles='payoff'
 			>
@@ -90,9 +90,9 @@
 			////Add vars
 		},
 		ready() {
-			this.myDecision = 0.5;
+			this.myDecision = 0.7/2;
 
-			var avg = this._getOtherDecisions;
+			//var avg = this._getOtherDecisions;
 
 			const evolve = this.evolveVar;
 			console.log(evolve);
@@ -104,12 +104,14 @@
 				// FIND 1-MY.D-O.D
 				// MY.P = MY.D(1-MY.D-O.D)
 				const avg = otherDecisions[0];
-				var scalar = c * Math.pow(evolve, -2);
+				var scalar = c / Math.pow(evolve, -2);
 
 				// Payoff with evolved A
 				// var payoff = scalar * myDecision * (evolve - myDecision);
 
-				var payoff = myDecision * (1 - myDecision - otherDecisions);
+				var payoff = (scalar * (myDecision * (evolve - myDecision - avg)));
+
+				// var payoff = myDecision * (1 - myDecision - avg);
 
 				return payoff;
 			};
@@ -122,14 +124,13 @@
 		// 	this.set('groupDecisions', decisions);
 		// },
 		_getOtherDecisions(groupDecisions) {
-			var decisions = [];
+			var sum = 0;
+			var numberofplayers = 0;
 			for (var pcode in groupDecisions) {
-				if(this.$.constants.participantCode != pcode) {
-					decisions.push(groupDecisions[pcode]);
-				}
+				sum += groupDecisions[pcode];
+				numberofplayers++;
 			}
-			return decisions;
-			// return Object.keys(groupDecisions).filter(pcode => pcode != this.$.constants.participantCode).sort().map(pcode => groupDecisions[pcode])
+			return [sum/numberofplayers];
 		},
 		_roundStart() {
 			this.$$('polymer-bubbles').roundStart();

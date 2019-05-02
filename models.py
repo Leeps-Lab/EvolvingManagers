@@ -5,7 +5,8 @@ from otree.api import (
 import csv, random, math
 
 
-from otree_redwood.models import DecisionGroup
+from otree_redwood.models import DecisionGroup, Event
+from django.contrib.contenttypes.models import ContentType
 
 author = 'Your name here'
 
@@ -29,7 +30,7 @@ def parse_config(config_file):
 
 class Constants(BaseConstants):
     name_in_url = 'evolving_managers'
-    players_per_group = 2 
+    players_per_group = None
     num_rounds = 100
 
 
@@ -66,36 +67,8 @@ class Group(DecisionGroup):
     def period_length(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['period_length']
     
-
-'''
-class Group(RedwoodGroup):
-
-    def _on_orders_event(self, event):
-        if not self.bid_queue:
-            self.bid_queue = []
-        if not self.ask_queue:
-            self.ask_queue = []
-    
-        player = self.get_player(event.participant.code)
-        role = player.role()
-
-        bid_queue_changed = False
-        ask_queue_changed = False
-
-        if event.value['type'] == 'bid':
-            if role != 'buyer':
-                return
-            if event.value['price'] > player.currency:
-                return
-
-        bid_queue_changed |= self.remove_bid(buyer=player)
-
-        if bid_queue_changed:
-            self.send('bid_queue', self.bid_queue)
-        if ask_queue_changed:
-            self.send('ask_queue', self.ask_queue)
-
-'''
+    def mean_matching(self):
+        return True
 
 class Player(BasePlayer):
 
@@ -110,5 +83,60 @@ class Player(BasePlayer):
 
     def a_var(self):
         pass
+
+    def set_payoff(self):
+        decisions = list(Event.objects.filter(
+                channel='group_decisions',
+                content_type=ContentType.objects.get_for_model(self.group),
+                group_pk=self.group.pk).order_by("timestamp"))
+
+        try:
+            period_start = Event.objects.get(
+                    channel='state',
+                    content_type=ContentType.objects.get_for_model(self.group),
+                    group_pk=self.group.pk,
+                    value='period_start')
+            period_end = Event.objects.get(
+                    channel='state',
+                    content_type=ContentType.objects.get_for_model(self.group),
+                    group_pk=self.group.pk,
+                    value='period_end')
+        except Event.DoesNotExist:
+            return float('nan')
+
+        self.payoff = self.get_payoff(period_start, period_end, decisions)
+
+    def get_payoff(self, period_start, period_end, decisions):
+        period_duration = period_end.timestamp - period_start.timestamp
+
+        payoff = 0
+
+        q1, q2 = 0.5, 0.5
+        for i, d in enumerate(decisions):
+            if not d.value: continue
+            myDecision = d.value[self.participant.code]
+            scalar = self.subsession.c()
+            avg = sum(d.value.values()) / len(d.value)
+
+            flow_payoff = (scalar * (myDecision * (1 - myDecision - avg)));
+            print("flowPay")
+            print(flow_payoff)
+
+
+            if i + 1 < len(decisions):
+                next_change_time = decisions[i + 1].timestamp
+            else:
+                next_change_time = period_end.timestamp
+            decision_length = (next_change_time - d.timestamp).total_seconds()
+            print("decisionlength")
+            print(decision_length)
+            payoff += decision_length * flow_payoff
+            print("payoff")
+            print(payoff)
+            print("perioddurationSEC")
+            print(period_duration.total_seconds)
+        return payoff*100 / period_duration.total_seconds()
+
+
 
 # add all vars here from bimatrix all Constants 

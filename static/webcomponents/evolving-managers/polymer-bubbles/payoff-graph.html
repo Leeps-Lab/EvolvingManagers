@@ -36,7 +36,7 @@
                 this.height = this.canvas.clientHeight;
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
-                this.yMin = .5;
+                this.yMin = -0.06;
                 this.yMax = this.maxPayoff * 1.05;
                 this.yRange = this.yMax - this.yMin;
                 this.yScale = this.height / this.yRange;
@@ -71,10 +71,13 @@
         },
         _drawPayoffHistory(now) {
             const ctx = this.ctx;
+            const payoffHistory = this.get('_payoffHistory');
+            if (!payoffHistory.length) {
+                return;
+            }
             ctx.save();
             ctx.save();
             this._transformContext();
-            const payoffHistory = this.get('_payoffHistory');
             ctx.beginPath();
             for (let i = 0; i < payoffHistory.length - 1; i++) {
                 const {payoff: payoff, time: cur_time} = payoffHistory[i];

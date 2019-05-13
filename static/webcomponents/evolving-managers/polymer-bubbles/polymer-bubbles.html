@@ -76,7 +76,7 @@
                     <payoff-graph
                         max-payoff='[[ maxPayoff ]]'
                         duration='[[ duration ]]'
-                        my-payoff='[[ payoffFunction(myDecision, otherDecisions) ]]'>
+                        my-payoff='[[ payoff ]]'>
                     </payoff-graph>
                 </div>
             </td>
@@ -131,6 +131,10 @@
             othersBubbles: {
                 type: String,
             },
+            payoff: {
+                type: Number,
+                computed: '_computeMyPayoff(otherDecisions)',
+            },
         },
         ready() {
             this.slider = this.$.slider;
@@ -147,6 +151,9 @@
         _sliderValueChanged(event) {
             this.myDecision = parseFloat(event.target.value);
         },
+        _computeMyPayoff(otherDecisions) {
+            return this.payoffFunction(this.myDecision, otherDecisions);
+        }
     })
 </script>
 </dom-module>

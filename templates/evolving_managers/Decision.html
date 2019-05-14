@@ -19,6 +19,7 @@
          others-bubbles='{{ player.subsession.bubble_style }}'
          a-var='{{ player.a_var }}'
          c-var='{{ player.subsession.c_var }}'
+         total-payoff='{{ player.participant.payoff | floatformat:0 }}'
      ></evolving-managers>
 
 {% endblock %}

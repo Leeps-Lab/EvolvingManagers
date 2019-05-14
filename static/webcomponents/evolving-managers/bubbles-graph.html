@@ -194,7 +194,7 @@
             ctx.restore();
             ctx.stroke()
 
-            const tickInterval = 0.1;
+            const tickInterval = this._getTickInterval(this.xMax);
             const tickWidth = 10;
             const tickStartY = this.yMax * this.yScale;
             const tickEndY = tickStartY + tickWidth;
@@ -204,7 +204,7 @@
             ctx.textBaseline = 'top';
 
             let curTick = 0;
-            while (curTick <= 1) {
+            while (curTick <= this.xMax) {
                 let x = (curTick - this.xMin) * this.xScale;
                 ctx.moveTo(x, tickStartY);
                 ctx.lineTo(x, tickEndY);
@@ -227,7 +227,7 @@
             ctx.restore();
             ctx.stroke();
 
-            const tickInterval = this._getYTickInterval();
+            const tickInterval = this._getTickInterval(this.yMax);
             const tickWidth = 10;
             const tickStartX = -this.xMin * this.xScale;
             const tickEndX = tickStartX - tickWidth;
@@ -249,21 +249,24 @@
 
             ctx.restore();
         },
-        _getYTickInterval() {
+        _getTickInterval(maxVal) {
             const maxNumTicks = 12;
 
-            if (this.yMax * 5 <= maxNumTicks) {
+            if (maxVal * 10 <= maxNumTicks) {
+                return 0.1;
+            }
+            if (maxVal * 5 <= maxNumTicks) {
                 return 0.2;
             }
-            if (this.yMax <= maxNumTicks) {
+            if (maxVal <= maxNumTicks) {
                 return 1;
             }
-            if (this.yMax / 5 <= maxNumTicks) {
+            if (maxVal / 5 <= maxNumTicks) {
                 return 5;
             }
 
             let interval = 10;
-            while (this.yMax / interval > maxNumTicks) {
+            while (maxVal / interval > maxNumTicks) {
                 interval += 10;
             }
             return interval;

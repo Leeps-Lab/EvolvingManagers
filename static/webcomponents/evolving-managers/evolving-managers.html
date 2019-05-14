@@ -26,19 +26,7 @@
         on-period-start='roundStart'
         >
     </redwood-period>
-    <polymer-bubbles
-        max-payoff='1'
-        other-decisions='[[ otherDecisions ]]'
-        my-decision='{{ myDecision }}'
-        payoff-function='[[ _payoffFunction ]]'
-        duration= '[[ periodLength ]]'
-        enable-payoff-landscape
-        others-bubbles='payoff'
-        >
-    </polymer-bubbles>
-
 	<otree-constants id="constants"></otree-constants>
-
 	<redwood-decision
 		initial-decision="[[ initialDecision ]]"
 		my-decision="{{ myDecision }}"
@@ -54,12 +42,9 @@
         }
         .toprow {
             height: 200px;
-            padding-top: 90px;
-
         }
-        .toprow.right {
-            padding-top: 90px;
-            padding-left: 100px;
+        .toprow.left {
+            padding: 10px;
         }
         .bottomrow {
             height: 300px;
@@ -79,12 +64,17 @@
     <table>
         <tr>
             <td>
-                <div class="toprow">
-                    Payoff: [[payoff]]
+                <div class="toprow left">
+                    <p>
+                        Your total accumulated payoffs so far: [[ totalPayoff ]]
+                    </p>
+                    <p>
+                        Your current A: [[ _toFixed(aVar) ]]
+                    </p>
                 </div>
             </td>
             <td>
-                <div class="toprow">
+                <div class="toprow right">
                     <strategy-graph
                         my-decision='[[ myDecision ]]'
                         other-decisions='[[ otherDecisions ]]'
@@ -180,6 +170,9 @@
             aVar: {
                 type: Number,
             },
+            totalPayoff: {
+                type: Number,
+            },
         },
         ready() {
             this.slider = this.$.slider;
@@ -211,18 +204,23 @@
         },
 		_getOtherDecisions(groupDecisions) {
 			let sum = 0;
-			let numberofplayers = 0;
+			let num_players = 0;
+            console.log(groupDecisions, this.$.constants.participantCode)
 			for (let pcode in groupDecisions) {
                 if (pcode != this.$.constants.participantCode) {
                     sum += groupDecisions[pcode];
-                    numberofplayers++;
+                    num_players++;
                 }
 			}
-			return [sum/numberofplayers];
+            console.log(sum/num_players)
+			return [sum/num_players];
 		},
         _calcMaxDecision(aVar) {
             return Math.max(1, aVar/2);
-        }
+        },
+        _toFixed(num) {
+            return num.toFixed(2);
+        },
     })
 </script>
 </dom-module>

@@ -37,12 +37,16 @@
             //     'payoff': shows everyone else's payoffs as well as their strategy
             othersBubbles: {
                 type: String,
-            }
+            },
+            maxDecision: {
+                type: Number,
+                observer: '_recalculateBounds',
+            },
         },
         observers: [
             '_redrawGraph(otherDecisions)',
         ],
-        attached() {
+        _recalculateBounds() {
             this.canvas = this.$.canvas;
             this.width = this.canvas.clientWidth;
             this.height = this.canvas.clientHeight;
@@ -50,7 +54,7 @@
             this.canvas.height = this.height;
 
             this.xMin = -0.06;
-            this.xMax = 0.71
+            this.xMax = this.maxDecision * 1.02;
             this.xRange = this.xMax - this.xMin;
             this.yMin = 0 - this.maxPayoff * 0.1;
             this.yMax = this.maxPayoff * 1.05;
@@ -133,7 +137,7 @@
                     otherDecisionsForOpponent.splice(i, 1, this.myDecision);
                     payoff = payoffFunction(otherDecisions[i], otherDecisionsForOpponent);
                 }
-                if (payoff > 0) {
+                if (payoff >= 0) {
                     ctx.beginPath();
                     const x = (otherDecisions[i] - this.xMin) * this.xScale;
                     const y = (this.yMax - payoff) * this.yScale;

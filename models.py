@@ -23,10 +23,12 @@ def parse_config(config_file):
     for row in rows:
         rounds.append({
             'period_length': int(row['period_length']),
-            'evolve': float(row['evolve']),
-            'c': float(row['c']),
+            'c_var': float(row['c_var']),
+            'bubble_style': row['bubble_style'],
+            'initial_decision': float(row['initial_decision']),
         })
     return rounds
+
 
 class Constants(BaseConstants):
     name_in_url = 'evolving_managers'
@@ -35,17 +37,15 @@ class Constants(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    def evolve(self):
-        return parse_config(self.session.config['config_file'])[self.round_number-1]['evolve']
-    def c(self):
-        return parse_config(self.session.config['config_file'])[self.round_number-1]['c']
-    # add any other constant vars per round here
+
+    def c_var(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['c_var']
+
+    def bubble_style(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['bubble_style']
 
 
 class Group(DecisionGroup):
-
-    def when_all_players_ready(self):
-        super().when_all_players_ready()
 
     def num_subperiods(self):
         return None
@@ -58,6 +58,7 @@ class Group(DecisionGroup):
     
     def mean_matching(self):
         return True
+
 
 class Player(BasePlayer):
 
@@ -87,11 +88,8 @@ class Player(BasePlayer):
         return self._a_var
 
     def initial_decision(self):
-    	return 0.66
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['initial_decision']
 
-    def other_decision(self, initial_decision):
-        return initial_decision
-    
     def set_payoff(self):
         decisions = list(Event.objects.filter(
                 channel='group_decisions',
@@ -123,26 +121,18 @@ class Player(BasePlayer):
         for i, d in enumerate(decisions):
             if not d.value: continue
             myDecision = d.value[self.participant.code]
-            scalar = self.subsession.c()
+            scalar = self.subsession.c_var()
             avg = sum(d.value.values()) / len(d.value)
 
             flow_payoff = (scalar * (myDecision * (1 - myDecision - avg)));
-            # print("flowPay")
-            # print(flow_payoff)
-
 
             if i + 1 < len(decisions):
                 next_change_time = decisions[i + 1].timestamp
             else:
                 next_change_time = period_end.timestamp
             decision_length = (next_change_time - d.timestamp).total_seconds()
-            # print("decisionlength")
-            # print(decision_length)
             payoff += decision_length * flow_payoff
-            # print("payoff")
-            # print(payoff)
-            # print("perioddurationSEC")
-            # print(period_duration.total_seconds)
+
         return payoff*100 / period_duration.total_seconds()
 
 

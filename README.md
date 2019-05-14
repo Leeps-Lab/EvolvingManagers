@@ -1,28 +1,12 @@
-[![Build Status](https://travis-ci.org/Leeps-Lab/oTree.svg?branch=master)](https://travis-ci.org/Leeps-Lab/oTree)
-
-# LEEPS Lab oTree Experiments
-
-## Quick start
-
+sample session config:
 ```
-> git clone https://github.com/Leeps-Lab/oTree.git
-> cd oTree
-> virtualenv -p `which python3` venv
-> source venv/bin/activate
-> pip install -r requirements.txt
-> otree resetdb
-> otree runserver
+{
+    'name': 'evolving_managers',
+    'display_name': 'Evolving Managers',
+    'num_demo_participants': 2,
+    'app_sequence': ['evolving_managers', 'payment_info'],
+    'config_file': 'demo.csv',
+},
 ```
 
-## Contact & support
-
-[oTree Help & discussion mailing list](https://groups.google.com/forum/#!forum/otree)
-
-* Contact mlgrant@ucsc.edu with experiment specific bug reports.
-* Contact chris@otree.org with general oTree bug reports.
-
-## Related repositories
-
-* The oTree core libraries are at https://github.com/oTree-org/otree-core.
-* The oTree experiment examples are at https://github.com/oTree-org/oTree.
-* The oTree-Redwood extension library is at https://github.com/Leeps-Lab/otree-redwood.
+the 'bubble_style' field in config determines how the other players' bubble is drawn. if it's set to 'none', no bubble is drawn. if it's set to 'strategy', the bubble is drawn on the x axis. if it's set to 'payoff', its height shows the other players' average payoff.

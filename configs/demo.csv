@@ -1,5 +1,5 @@
-period_length,evolve,c
-100,0.5,4
-100,1.5,4
-100,1.5,4
-100,2.0,4
+period_length,c_var,initial_decision,bubble_style
+100,4,0.66,strategy
+100,4,0.66,strategy
+100,4,0.66,strategy
+100,4,0.66,strategy

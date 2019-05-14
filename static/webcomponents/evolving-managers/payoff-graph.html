@@ -103,7 +103,7 @@
             ctx.restore();
         },
         _addPayoffToHistory(payoff) {
-            if (payoff) {
+            if (typeof(payoff) === "number") {
                 this.push('_payoffHistory', {
                     payoff: payoff,
                     time: performance.now()

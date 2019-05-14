@@ -14,14 +14,13 @@
 {% block content %}
 
      <evolving-managers
-         initial-decision="1"
-         evolve-var='{{ player.a_var }}'
+         initial-decision='{{ player.initial_decision }}'
          period-length='{{ player.group.period_length }}'
-         evolve='{{ player.subsession.evolve }}'
-         c='{{ player.subsession.c }}'>
-     </evolving-managers>
+         others-bubbles='{{ player.subsession.bubble_style }}'
+         a-var='{{ player.a_var }}'
+         c-var='{{ player.subsession.c_var }}'
+     ></evolving-managers>
 
-     <!-- the how add var above. - ask about output once configs are completed  ed -->
 {% endblock %}
 
 

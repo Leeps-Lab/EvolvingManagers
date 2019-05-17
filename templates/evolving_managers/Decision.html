@@ -2,7 +2,7 @@
 {% load staticfiles otree %}
 
 {% block title %}
-    Page title
+    Your Decision
 {% endblock %}
 
 {% block scripts %}
@@ -19,9 +19,8 @@
          others-bubbles='{{ player.subsession.bubble_style }}'
          a-var='{{ player.a_var }}'
          c-var='{{ player.subsession.c_var }}'
-         total-payoff='{{ player.participant.payoff | floatformat:0 }}'
+         previous-payoff='{{ player.get_payoff_window | floatformat:0 }}'
+         max-previous-payoff='{{ group.max_previous_payoff | floatformat:0}}'
      ></evolving-managers>
 
 {% endblock %}
-
-

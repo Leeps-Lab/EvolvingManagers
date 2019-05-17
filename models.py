@@ -26,6 +26,7 @@ def parse_config(config_file):
             'c_var': float(row['c_var']),
             'bubble_style': row['bubble_style'],
             'initial_decision': float(row['initial_decision']),
+            'window_size': int(row['window_size']),
         })
     return rounds
 
@@ -44,6 +45,9 @@ class Subsession(BaseSubsession):
     def bubble_style(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['bubble_style']
 
+    def window_size(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['window_size']
+
 
 class Group(DecisionGroup):
 
@@ -59,6 +63,9 @@ class Group(DecisionGroup):
     def mean_matching(self):
         return True
 
+    def max_previous_payoff(self):
+        return max(p.get_payoff_window() for p in self.get_players())
+
 
 class Player(BasePlayer):
 
@@ -73,10 +80,11 @@ class Player(BasePlayer):
             self._a_var = random.uniform(0, 2)
         else:
             last_player = self.in_round(self.round_number - 1)
-            last_round_payoffs = [p.payoff for p in last_player.group.get_players()]
-            last_round_payoffs.sort()
+            last_payoff = last_player.get_payoff_window()
+            previous_payoffs = [p.get_payoff_window() for p in last_player.group.get_players()]
+            previous_payoffs.sort(reverse=True)
             # payoff_position = 0 if you got best payoff in last round, 1 if you got worst
-            payoff_position = last_round_payoffs.index(last_player.payoff) / (len(last_round_payoffs) - 1)
+            payoff_position = previous_payoffs.index(last_payoff) / (len(previous_payoffs) - 1)
             evolve_prob = payoff_position * 0.2
             last_a = last_player.a_var()
             if random.random() < evolve_prob:
@@ -89,6 +97,11 @@ class Player(BasePlayer):
 
     def initial_decision(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['initial_decision']
+
+    def get_payoff_window(self):
+        width = self.subsession.window_size()
+        players = self.in_rounds(max(self.round_number-width, 1), self.round_number)
+        return sum(p.payoff for p in players)
 
     def set_payoff(self):
         decisions = list(Event.objects.filter(
@@ -117,24 +130,29 @@ class Player(BasePlayer):
 
         payoff = 0
 
-        q1, q2 = 0.5, 0.5
+        q1 = self.initial_decision()
+        q2 = self.initial_decision()
         for i, d in enumerate(decisions):
-            if not d.value: continue
+            print(i, d)
+            if (not d.value or
+                d.timestamp < period_start.timestamp or
+                d.timestamp > period_end.timestamp):
+                continue
+
             myDecision = d.value[self.participant.code]
             scalar = self.subsession.c_var()
-            avg = sum(d.value.values()) / len(d.value)
+            avg = sum(d.value[k] for k in d.value if k != self.participant.code) / (len(d.value) - 1)
 
             flow_payoff = (scalar * (myDecision * (1 - myDecision - avg)));
 
-            if i + 1 < len(decisions):
-                next_change_time = decisions[i + 1].timestamp
+            if flow_payoff < 0:
+                continue
+
+            if i+1 < len(decisions):
+                next_change_time = decisions[i+1].timestamp
             else:
                 next_change_time = period_end.timestamp
             decision_length = (next_change_time - d.timestamp).total_seconds()
             payoff += decision_length * flow_payoff
 
         return payoff*100 / period_duration.total_seconds()
-
-
-
-# add all vars here from bimatrix all Constants 

@@ -18,7 +18,8 @@ class Instructions(Page):
 class DecisionWaitPage(WaitPage):
 
     def is_displayed(self):
-        return self.round_number <= self.group.num_rounds()
+        return self.round_number == 1
+        # return self.round_number <= self.group.num_rounds()
 
 class Decision(Page):
 
@@ -91,5 +92,4 @@ page_sequence = [
     DecisionWaitPage,
     Decision,
     ResultsWaitPage,
-    Results
 ]

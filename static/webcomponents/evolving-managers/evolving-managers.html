@@ -66,7 +66,10 @@
             <td>
                 <div class="toprow left">
                     <p>
-                        Your total accumulated payoffs so far: [[ totalPayoff ]]
+                        Your current w: [[ previousPayoff ]]
+                    </p>
+                    <p>
+                        Max w: [[ maxPreviousPayoff ]]
                     </p>
                     <p>
                         Your current A: [[ _toFixed(aVar) ]]
@@ -170,7 +173,10 @@
             aVar: {
                 type: Number,
             },
-            totalPayoff: {
+            previousPayoff: {
+                type: Number,
+            },
+            maxPreviousPayoff: {
                 type: Number,
             },
         },
@@ -205,14 +211,12 @@
 		_getOtherDecisions(groupDecisions) {
 			let sum = 0;
 			let num_players = 0;
-            console.log(groupDecisions, this.$.constants.participantCode)
 			for (let pcode in groupDecisions) {
                 if (pcode != this.$.constants.participantCode) {
                     sum += groupDecisions[pcode];
                     num_players++;
                 }
 			}
-            console.log(sum/num_players)
 			return [sum/num_players];
 		},
         _calcMaxDecision(aVar) {

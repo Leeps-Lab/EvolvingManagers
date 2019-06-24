@@ -26,6 +26,20 @@ def parse_config(config_file):
         })
     return rounds
 
+# randomly choose something from elems,
+# elements are weighted by weights
+def weighted_choice(elems, weights):
+    total = sum(weights)
+    rand = random.uniform(0, total)
+    cur_sum = 0
+    for i, w in enumerate(weights):
+        cur_sum += w
+        if rand < cur_sum:
+            return elems[i]
+    # not sure this is necessary, but if rand ends up being equal to total
+    # we'll end up here. in that case just return the last elem
+    return elems[-1]
+
 
 class Constants(BaseConstants):
     name_in_url = 'evolving_managers'
@@ -165,12 +179,12 @@ class Player(BasePlayer):
 
         # if evolution occurs, choose from A vars of players whose payoff windows were above average
         # weight this choice by the distance from average
-        if evolve_prob > random.random():
+        if random.random() < evolve_prob:
             avg_payoff_window = sum(all_payoff_windows) / len(all_payoff_windows)
             prev_a_vars = self.group.get_a_vars(subperiod_num-1)
             weights = [max(0, poff-avg_payoff_window) for poff in all_payoff_windows]
 
-            new_a = random.choices(prev_a_vars, weights)[0]
+            new_a = weighted_choice(prev_a_vars, weights)
             # add some distortion to the randomly chosen A
             new_a += random.uniform(-0.1, 0.1)
         # otherwise just use your A from the last round

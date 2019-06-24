@@ -92,4 +92,5 @@ page_sequence = [
     DecisionWaitPage,
     Decision,
     ResultsWaitPage,
+    Results,
 ]

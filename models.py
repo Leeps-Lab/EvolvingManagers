@@ -65,32 +65,32 @@ class Group(DecisionGroup):
     def update_last_subperiod_payoffs(self):
         # get the most recent subperiod start event for this group
         subperiod_start = Event.objects.filter(
-                channel='subperiod_start',
-                content_type=ContentType.objects.get_for_model(self),
-                group_pk=self.pk
-                ).latest("timestamp")
+            channel='subperiod_start',
+            content_type=ContentType.objects.get_for_model(self),
+            group_pk=self.pk
+            ).latest("timestamp")
 
         # the decision set that happened before, but closest to the start of the subperiod.
         # gives each player's decision at the start of the subperiod.
         # this is NOT a decision event, it's a dict like group decisions
         try:
             initial_decision = Event.objects.filter(
-                    channel='group_decisions',
-                    content_type=ContentType.objects.get_for_model(self),
-                    group_pk=self.pk,
-                    timestamp__lt=subperiod_start.timestamp
-                    ).latest('timestamp').value
+                channel='group_decisions',
+                content_type=ContentType.objects.get_for_model(self),
+                group_pk=self.pk,
+                timestamp__lt=subperiod_start.timestamp
+                ).latest('timestamp').value
         # if this set doesn't exist, just use each player's initial decision
         # for the round
         except Event.DoesNotExist:
             initial_decision = {p.participant.code: p.initial_decision() for p in self.get_players()}
         # get all the decisions for this group which happened after the last subperiod start
         decisions = list(Event.objects.filter(
-                channel='group_decisions',
-                content_type=ContentType.objects.get_for_model(self),
-                group_pk=self.pk,
-                timestamp__gte=subperiod_start.timestamp)
-                .order_by('timestamp'))
+            channel='group_decisions',
+            content_type=ContentType.objects.get_for_model(self),
+            group_pk=self.pk,
+            timestamp__gte=subperiod_start.timestamp)
+            .order_by('timestamp'))
         
         for player in self.get_players():
             pcode = player.participant.code

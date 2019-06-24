@@ -22,17 +22,20 @@
 
 <dom-module id='evolving-managers'>
 <template>
-    <redwood-period
-        on-period-start='roundStart'
-        >
-    </redwood-period>
 	<otree-constants id="constants"></otree-constants>
+    <redwood-period
+        on-period-start='roundStart' >
+    </redwood-period>
 	<redwood-decision
 		initial-decision="[[ initialDecision ]]"
 		my-decision="{{ myDecision }}"
 		group-decisions="{{ groupDecisions }}"
 		max-per-second="10">
-	</redwood-decision>
+    </redwood-decision>
+    <redwood-channel
+        channel="subperiod_start"
+        on-event="_onSubperiodStart">
+    </redwood-channel>
     <link rel="stylesheet" href="range.css">
 
     <style>
@@ -66,13 +69,13 @@
             <td>
                 <div class="toprow left">
                     <p>
-                        Your current w: [[ previousPayoff ]]
+                        Your current w: [[ _toFixed(_previousPayoff) ]]
                     </p>
                     <p>
-                        Max w: [[ maxPreviousPayoff ]]
+                        Max w: [[ _toFixed(_maxPreviousPayoff) ]]
                     </p>
                     <p>
-                        Your current A: [[ _toFixed(aVar) ]]
+                        Your current A: [[ _toFixed(_aVar) ]]
                     </p>
                 </div>
             </td>
@@ -96,7 +99,7 @@
                         my-decision='[[ myDecision ]]'
                         others-bubbles='[[ othersBubbles ]]'
                         enable-payoff-landscape
-                        max-decision='[[ _calcMaxDecision(aVar) ]]'
+                        max-decision='[[ _calcMaxDecision(_aVar) ]]'
                     ></bubbles-graph>
                 </div>
             </td>
@@ -117,7 +120,7 @@
                         id="slider"
                         type="range"
                         min="0"
-                        max="[[ _calcMaxDecision(aVar) ]]"
+                        max="[[ _calcMaxDecision(_aVar) ]]"
                         step="0.01"
                         on-change="_sliderValueChanged">
                 </div>
@@ -170,13 +173,14 @@
             cVar: {
                 type: Number,
             },
-            aVar: {
+            _aVar: {
+                type: Number,
+                value: 1,
+            },
+            _previousPayoff: {
                 type: Number,
             },
-            previousPayoff: {
-                type: Number,
-            },
-            maxPreviousPayoff: {
+            _maxPreviousPayoff: {
                 type: Number,
             },
         },
@@ -190,9 +194,9 @@
             const self = this;
 			this.payoffFunction = function(myDecision, otherDecisions) {
 				const avg = otherDecisions[0];
-				var scalar = self.cVar / Math.pow(self.aVar, 2);
+				var scalar = self.cVar / Math.pow(self._aVar, 2);
 
-				var payoff = (scalar * (myDecision * (self.aVar - myDecision - avg)));
+				var payoff = (scalar * (myDecision * (self._aVar - myDecision - avg)));
 
 				return Math.max(payoff, 0);
 			};
@@ -201,6 +205,14 @@
             this.bubbles_graph.roundStart();
             this.payoff_graph.roundStart();
             this.strategy_graph.roundStart();
+        },
+        _onSubperiodStart(event) {
+            const msg = event.detail.payload;
+            const pcode = this.$.constants.participantCode;
+            this._aVar = msg[pcode].a_var;
+            this._previousPayoff = msg[pcode].payoff_window
+            // yeehaw
+            this._maxPreviousPayoff = Math.max.apply(null, Object.values(msg).map(e => e.payoff_window));
         },
         _sliderValueChanged(event) {
             this.myDecision = parseFloat(event.target.value);
@@ -223,6 +235,9 @@
             return Math.max(1, aVar/2);
         },
         _toFixed(num) {
+            if (num === null || typeof num === 'undefined') {
+                return '';
+            }
             return num.toFixed(2);
         },
     })

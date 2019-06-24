@@ -17,10 +17,7 @@
          initial-decision='{{ player.initial_decision }}'
          period-length='{{ player.group.period_length }}'
          others-bubbles='{{ player.subsession.bubble_style }}'
-         a-var='{{ player.a_var }}'
          c-var='{{ player.subsession.c_var }}'
-         previous-payoff='{{ player.get_payoff_window | floatformat:0 }}'
-         max-previous-payoff='{{ group.max_previous_payoff | floatformat:0}}'
      ></evolving-managers>
 
 {% endblock %}

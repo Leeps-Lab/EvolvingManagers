@@ -24,6 +24,7 @@
 <template>
 	<otree-constants id="constants"></otree-constants>
     <redwood-period
+        running="{{ _isPeriodRunning }}"
         on-period-start='roundStart' >
     </redwood-period>
 	<redwood-decision
@@ -39,6 +40,13 @@
     <link rel="stylesheet" href="range.css">
 
     <style>
+        :host {
+            display: inline-block;
+            position : relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
         .toprow, .bottomrow {
             border: 1px solid black;
             width: 600px;
@@ -122,7 +130,8 @@
                         min="0"
                         max="[[ _calcMaxDecision(_aVar) ]]"
                         step="0.01"
-                        on-change="_sliderValueChanged">
+                        on-change="_sliderValueChanged"
+                        disabled="{{ !_isPeriodRunning }}">
                 </div>
             </td>
         </tr>
@@ -168,7 +177,7 @@
             },
             payoff: {
                 type: Number,
-                computed: '_computeMyPayoff(otherDecisions)',
+                computed: '_computeMyPayoff(otherDecisions, _aVar)',
             },
             cVar: {
                 type: Number,
@@ -183,6 +192,9 @@
             _maxPreviousPayoff: {
                 type: Number,
             },
+            _isPeriodRunning: {
+                type: Boolean
+            },
         },
         ready() {
             this.slider = this.$.slider;
@@ -196,7 +208,7 @@
 				const avg = otherDecisions[0];
 				var scalar = self.cVar / Math.pow(self._aVar, 2);
 
-				var payoff = (scalar * (myDecision * (self._aVar - myDecision - avg)));
+				var payoff = scalar * myDecision * (self._aVar - myDecision - avg);
 
 				return Math.max(payoff, 0);
 			};
@@ -213,11 +225,13 @@
             this._previousPayoff = msg[pcode].payoff_window
             // yeehaw
             this._maxPreviousPayoff = Math.max.apply(null, Object.values(msg).map(e => e.payoff_window));
+
+            this.bubbles_graph._redrawGraph();
         },
         _sliderValueChanged(event) {
             this.myDecision = parseFloat(event.target.value);
         },
-        _computeMyPayoff(otherDecisions) {
+        _computeMyPayoff(otherDecisions, _aVar) {
             return this.payoffFunction(this.myDecision, otherDecisions);
         },
 		_getOtherDecisions(groupDecisions) {

@@ -5,21 +5,10 @@ from .models import Constants
 from datetime import timedelta
 from otree_redwood.models import DecisionGroup
 
-class Instructions(Page):
-
-    def is_displayed(self):
-        return self.round_number == 1
-    
-    def vars_for_template(self):
-        return {
-            'instructions_link': self.session.config['instructions_link'],
-        }
-
 class DecisionWaitPage(WaitPage):
 
     def is_displayed(self):
-        return self.round_number == 1
-        # return self.round_number <= self.group.num_rounds()
+        return self.round_number <= self.group.num_rounds()
 
 class Decision(Page):
 
@@ -29,6 +18,7 @@ class Decision(Page):
 class ResultsWaitPage(WaitPage):
 
     def after_all_players_arrive(self):
+        self.group.update_last_subperiod_payoffs()
         for player in self.group.get_players():
             player.set_payoff()
 
@@ -50,7 +40,7 @@ def get_output_table_header(groups):
         'p2_strategy',
         'p1_code',
         'p2_code',
-        ]
+    ]
 
 def get_output_table(events):
     if not events:

@@ -18,7 +18,7 @@ def parse_config(config_file):
     for row in rows:
         rounds.append({
             'period_length': int(row['period_length']),
-            'subperiod_length': int(row['subperiod_length']),
+            'subperiod_length': float(row['subperiod_length']),
             'c_var': float(row['c_var']),
             'bubble_style': row['bubble_style'],
             'initial_decision': float(row['initial_decision']),
@@ -98,6 +98,7 @@ class Group(DecisionGroup):
         # for the round
         except Event.DoesNotExist:
             initial_decision = {p.participant.code: p.initial_decision() for p in self.get_players()}
+
         # get all the decisions for this group which happened after the last subperiod start
         decisions = list(Event.objects.filter(
             channel='group_decisions',
@@ -158,13 +159,16 @@ class Player(BasePlayer):
     def a_var(self, subperiod_num):
         self.refresh_from_db()
 
+        # if we've already calculated A for this subperiod
         if subperiod_num < len(self._a_vars):
             return self._a_vars[subperiod_num]
+        # if this is the very first A being calculated
         if subperiod_num == 0:
             random_a = random.uniform(0.5, 2)
             self._a_vars = [ random_a ]
             self.save(update_fields=['_a_vars'])
             return random_a
+        # if the A for the previous subperiod hasn't been calculated
         if subperiod_num > len(self._a_vars):
             raise ValueError("can't generate A for subperiod {}".format(subperiod_num))
         

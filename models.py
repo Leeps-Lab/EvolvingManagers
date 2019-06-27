@@ -23,6 +23,7 @@ def parse_config(config_file):
             'bubble_style': row['bubble_style'],
             'initial_decision': float(row['initial_decision']),
             'window_size': int(row['window_size']),
+            'max_evolve_prob': float(row['max_evolve_prob']),
         })
     return rounds
 
@@ -70,8 +71,8 @@ class Group(DecisionGroup):
     def window_size(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['window_size']
 
-    def window_size(self):
-        return parse_config(self.session.config['config_file'])[self.round_number-1]['window_size']
+    def max_evolve_prob(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['max_evolve_prob']
     
     def mean_matching(self):
         return True
@@ -179,7 +180,7 @@ class Player(BasePlayer):
         # payoff position is a num between 0 and 1
         # 0 for the best payoff in the prev round, 1 for the worst
         payoff_position = poff_windows_sorted.index(payoff_window) / (len(poff_windows_sorted) - 1)
-        evolve_prob = payoff_position * 0.2
+        evolve_prob = payoff_position * self.group.max_evolve_prob()
 
         # if evolution occurs, choose from A vars of players whose payoff windows were above average
         # weight this choice by the distance from average

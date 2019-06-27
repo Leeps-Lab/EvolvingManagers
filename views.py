@@ -31,16 +31,18 @@ class Results(Page):
         return self.round_number <= self.group.num_rounds()
 
 def get_output_table_header(groups):
-    return [
+    max_num_players = max(len(g.get_players()) for g in groups)
+    header = [
         'session_code',
         'round_number',
         'id_in_subsession',
         'tick',
-        'p1_strategy',
-        'p2_strategy',
-        'p1_code',
-        'p2_code',
     ]
+    for i in range(1, max_num_players+1):
+        header.append('p{}_code'.format(i))
+        header.append('p{}_strategy'.format(i))
+        header.append('p{}_a_var'.format(i))
+    return header
 
 def get_output_table(events):
     if not events:
@@ -48,34 +50,32 @@ def get_output_table(events):
     rows = []
     minT = min(e.timestamp for e in events if e.channel == 'state')
     maxT = max(e.timestamp for e in events if e.channel == 'state')
-    p1, p2 = events[0].group.get_players()
-    p1_code = p1.participant.code
-    p2_code = p2.participant.code
     group = events[0].group
+    players = group.get_players()
     # sets sampling frequency for continuous time output
     ticks_per_second = 2
-    p1_decision = float('nan')
-    p2_decision = float('nan')
+    cur_decisions = {p.participant.code: float('nan') for p in players}
+    cur_subp_vars = {p.participant.code: {'a_var': float('nan')} for p in players}
     for tick in range((maxT - minT).seconds * ticks_per_second):
         currT = minT + timedelta(seconds=(tick / ticks_per_second))
-        cur_decision_event = None
         while events[0].timestamp <= currT:
             e = events.pop(0)
             if e.channel == 'group_decisions':
-                cur_decision_event = e
-        if cur_decision_event:
-            p1_decision = cur_decision_event.value[p1_code]
-            p2_decision = cur_decision_event.value[p2_code]
-        rows.append([
+                cur_decisions.update(e.value)
+            elif e.channel == 'subperiod_start':
+                cur_subp_vars.update(e.value)
+        row = [
             group.session.code,
             group.round_number,
             group.id_in_subsession,
             tick,
-            p1_decision,
-            p2_decision,
-            p1_code,
-            p2_code,
-        ])
+        ]
+        for p in players:
+            pcode = p.participant.code
+            row.append(pcode)
+            row.append(cur_decisions[pcode])
+            row.append(cur_subp_vars[pcode]['a_var'])
+        rows.append(row)
     return rows
 
 page_sequence = [

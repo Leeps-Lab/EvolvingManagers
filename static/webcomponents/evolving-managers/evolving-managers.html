@@ -83,7 +83,13 @@
                         Max w: [[ _toFixed(_maxPreviousPayoff) ]]
                     </p>
                     <p>
+                        Average w: [[ _toFixed(_avgPreviousPayoff) ]]
+                    </p>
+                    <p>
                         Your current A: [[ _toFixed(_aVar) ]]
+                    </p>
+                    <p>
+                        Window width k: [[ kVar ]]
                     </p>
                 </div>
             </td>
@@ -182,6 +188,9 @@
             cVar: {
                 type: Number,
             },
+            kVar: {
+                type: Number,
+            },
             _aVar: {
                 type: Number,
                 value: 1,
@@ -190,6 +199,9 @@
                 type: Number,
             },
             _maxPreviousPayoff: {
+                type: Number,
+            },
+            _avgPreviousPayoff: {
                 type: Number,
             },
             _isPeriodRunning: {
@@ -225,6 +237,7 @@
             this._previousPayoff = msg[pcode].payoff_window
             // yeehaw
             this._maxPreviousPayoff = Math.max.apply(null, Object.values(msg).map(e => e.payoff_window));
+            this._avgPreviousPayoff = Object.values(msg).map(e => e.payoff_window).reduce((a, b) => a + b, 0) / Object.values(msg).length;
 
             this.bubbles_graph._redrawGraph();
         },

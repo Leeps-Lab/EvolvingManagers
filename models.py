@@ -259,9 +259,14 @@ class Player(BasePlayer):
         self.refresh_from_db()
         pcode = self.participant.code
         window_size = self.group.window_size()
-        window_start = max(0, subperiod_num - window_size)
-        payoffs = self._subperiod_payoffs[window_start:subperiod_num]
-        return sum(payoffs)
+        payoffs = [ self._subperiod_payoffs[subperiod_num] ]
+        current_a = self.a_var(subperiod_num)
+        for i in range(1, window_size):
+            if (subperiod_num-i < 0 or
+                self.a_var(subperiod_num-i) != current_a):
+                break
+            payoffs.append(self._subperiod_payoffs[subperiod_num-i])
+        return sum(payoffs) / len(payoffs)
     
     def set_payoff(self):
         self.refresh_from_db()

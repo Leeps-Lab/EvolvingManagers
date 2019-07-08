@@ -113,7 +113,7 @@
                         my-decision='[[ myDecision ]]'
                         others-bubbles='[[ othersBubbles ]]'
                         enable-payoff-landscape
-                        max-decision='[[ _calcMaxDecision(_aVar) ]]'
+                        max-decision='1'
                     ></bubbles-graph>
                 </div>
             </td>
@@ -134,7 +134,7 @@
                         id="slider"
                         type="range"
                         min="0"
-                        max="[[ _calcMaxDecision(_aVar) ]]"
+                        max="1"
                         step="0.01"
                         on-change="_sliderValueChanged"
                         disabled="{{ !_isPeriodRunning }}">
@@ -217,12 +217,13 @@
 
             const self = this;
 			this.payoffFunction = function(myDecision, otherDecisions) {
-				const avg = otherDecisions[0];
-				var scalar = self.cVar / Math.pow(self._aVar, 2);
-
-				var payoff = scalar * myDecision * (self._aVar - myDecision - avg);
-
-				return Math.max(payoff, 0);
+                let sum = 0;
+				const scalar = self.cVar / Math.pow(self._aVar, 2);
+                for (decision of otherDecisions) {
+                    const payoff = scalar * myDecision * (self._aVar - myDecision - decision);
+                    sum += Math.max(payoff, 0);
+                }
+				return sum / otherDecisions.length;
 			};
         },
         roundStart() {
@@ -248,19 +249,12 @@
             return this.payoffFunction(this.myDecision, otherDecisions);
         },
 		_getOtherDecisions(groupDecisions) {
-			let sum = 0;
-			let num_players = 0;
-			for (let pcode in groupDecisions) {
-                if (pcode != this.$.constants.participantCode) {
-                    sum += groupDecisions[pcode];
-                    num_players++;
-                }
-			}
-			return [sum/num_players];
+            const pcodes = Object.keys(groupDecisions);
+            // remove myself from pcodes
+            pcodes.splice(pcodes.indexOf(this.$.constants.participantCode), 1);
+            pcodes.sort();
+            return pcodes.map(e => groupDecisions[e]);
 		},
-        _calcMaxDecision(aVar) {
-            return Math.max(1, aVar/2);
-        },
         _toFixed(num) {
             if (num === null || typeof num === 'undefined') {
                 return '';

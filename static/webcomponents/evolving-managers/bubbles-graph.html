@@ -69,7 +69,10 @@
             this._drawYAxis();
         },
         roundStart() {
-            setTimeout(this._redrawGraph.bind(this));
+            setTimeout(() => {
+                this._recalculateBounds();
+                this._redrawGraph();
+            });
         },
         _redrawGraph() {
             if (!this.ctx) {

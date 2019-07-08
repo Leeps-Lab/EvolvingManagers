@@ -243,10 +243,16 @@ class Player(BasePlayer):
         scalar = self.subsession.c_var()
         avg = sum(decision[k] for k in decision if k != pcode) / (len(decision) - 1)
 
-        flow_payoff = scalar * my_decision * (1 - my_decision - avg);
+        # calculate flow payoff as average of pairwise matchings
+        flow_payoff = 0
+        for p, d in decision.items():
+            # don't match with myself
+            if p == pcode:
+                continue
+            poff = scalar * my_decision * (1 - my_decision - d);
+            flow_payoff += max(poff, 0)
 
-        if flow_payoff < 0:
-            return 0
+        flow_payoff /= (len(decision) - 1)
 
         return decision_length * flow_payoff
     

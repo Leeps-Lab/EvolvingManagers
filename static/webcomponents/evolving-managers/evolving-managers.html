@@ -188,6 +188,9 @@
             cVar: {
                 type: Number,
             },
+            gammaVar: {
+                type: Number,
+            },
             kVar: {
                 type: Number,
             },
@@ -220,7 +223,7 @@
                 let sum = 0;
 				const scalar = self.cVar / Math.pow(self._aVar, 2);
                 for (decision of otherDecisions) {
-                    const payoff = scalar * myDecision * (self._aVar - myDecision - decision);
+                    const payoff = scalar * myDecision * (self._aVar - myDecision - self.gammaVar * decision);
                     sum += Math.max(payoff, 0);
                 }
 				return sum / otherDecisions.length;

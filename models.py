@@ -20,6 +20,7 @@ def parse_config(config_file):
             'period_length': int(row['period_length']),
             'subperiod_length': float(row['subperiod_length']),
             'c_var': float(row['c_var']),
+            'gamma_var': float(row['gamma_var']),
             'bubble_style': row['bubble_style'],
             'initial_decision': float(row['initial_decision']),
             'window_size': int(row['window_size']),
@@ -52,6 +53,9 @@ class Subsession(BaseSubsession):
 
     def c_var(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['c_var']
+
+    def gamma_var(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['gamma_var']
 
     def bubble_style(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['bubble_style']
@@ -241,6 +245,7 @@ class Player(BasePlayer):
 
         my_decision = decision[pcode]
         scalar = self.subsession.c_var()
+        gamma  = self.subsession.gamma_var()
         avg = sum(decision[k] for k in decision if k != pcode) / (len(decision) - 1)
 
         # calculate flow payoff as average of pairwise matchings
@@ -249,7 +254,7 @@ class Player(BasePlayer):
             # don't match with myself
             if p == pcode:
                 continue
-            poff = scalar * my_decision * (1 - my_decision - d);
+            poff = scalar * my_decision * (1 - my_decision - gamma * d);
             flow_payoff += max(poff, 0)
 
         flow_payoff /= (len(decision) - 1)

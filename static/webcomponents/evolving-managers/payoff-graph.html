@@ -3,7 +3,8 @@
 <dom-module id='payoff-graph'>
 <template>
     <style>
-        canvas {
+        canvas, :host {
+            display: inline-block;
             width: 100%;
             height: 100%;
         }
@@ -29,27 +30,27 @@
                 value: () => [],
             },
         },
-        ready() {
-            setTimeout(() => {
-                this.canvas = this.$.canvas;
-                this.width = this.canvas.clientWidth;
-                this.height = this.canvas.clientHeight;
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
-                this.yMin = -0.06;
-                this.yMax = this.maxPayoff * 1.05;
-                this.yRange = this.yMax - this.yMin;
-                this.yScale = this.height / this.yRange;
-                this.ctx = this.canvas.getContext('2d');
-            });
+        attached() {
+            this.canvas = this.$.canvas;
+            this.width = this.canvas.clientWidth;
+            this.height = this.canvas.clientHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
+
+            // the amount of space below the x axis in pixels
+            const yPadding = 30;
+            this.yMax = this.maxPayoff * 1.05;
+            this.yScale = (this.height - yPadding) / this.yMax;
+            this.yMin = yPadding / this.yScale;
+            this.ctx = this.canvas.getContext('2d');
+            this._drawXAxis();
         },
         roundStart() {
             window.setTimeout(() => {
                 this.start_time = performance.now();
                 this.xMin = this.start_time;
                 this.xMax = this.xMin + this.duration * 1000;
-                this.xRange = this.xMax - this.xMin;
-                this.xScale = this.width / this.xRange;
+                this.xScale = this.width / (this.xMax - this.xMin);
                 this.last_time = this.start_time;
                 requestAnimationFrame(this._tick.bind(this));
             });

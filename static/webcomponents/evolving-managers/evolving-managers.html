@@ -47,102 +47,104 @@
             transform: translateX(-50%);
         }
 
-        .toprow, .bottomrow {
+        .grid {
+            width: 80vw;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            margin: 2px;
+        }
+
+        .row:nth-child(1) {
+            flex: 1 1 0;
+        }
+
+        .row:nth-child(2) {
+            flex: 10 10 0;
+        }
+
+        .row:nth-child(3) {
+            flex: 1 1 0;
+        }
+
+        .cell {
+            height: 100%;
             border: 1px solid black;
-            width: 600px;
+            margin: 2px;
         }
-        .toprow {
-            height: 200px;
+
+        .cell:nth-child(1) {
+            flex: 3 3 0;
         }
-        .toprow.left {
-            padding: 10px;
+
+        .cell:nth-child(2) {
+            flex: 1 1 0;
         }
-        .bottomrow {
-            height: 300px;
-        }
-        #slider-container {
-            width: 600px;
-            height: 50px;
-            position: relative;
-        }
+
         #slider {
-            position: absolute;
-            width: 95%;
-            left: 24px;
-            top: 20px;
+            display: inline-block;
+            position: relative;
+            left: 26px;
+            top: 50%;
+            transform: translateY(-150%);
+            display: inline-block;
+            width: calc((100% - 26px) * 0.985);
         }
+
     </style>
-    <table>
-        <tr>
-            <td>
-                <div class="toprow left">
-                    <p>
-                        Your current w: [[ _toFixed(_previousPayoff) ]]
-                    </p>
-                    <p>
-                        Max w: [[ _toFixed(_maxPreviousPayoff) ]]
-                    </p>
-                    <p>
-                        Average w: [[ _toFixed(_avgPreviousPayoff) ]]
-                    </p>
-                    <p>
-                        Your current A: [[ _toFixed(_aVar) ]]
-                    </p>
-                    <p>
-                        Window width k: [[ kVar ]]
-                    </p>
-                </div>
-            </td>
-            <td>
-                <div class="toprow right">
-                    <strategy-graph
-                        my-decision='[[ myDecision ]]'
-                        other-decisions='[[ otherDecisions ]]'
-                        duration='[[ periodLength ]]'>
-                    </strategy-graph>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="bottomrow">
-                    <bubbles-graph
-                        other-decisions='[[ otherDecisions ]]'
-                        max-payoff='[[ maxPayoff ]]'
-                        payoff-function='[[ payoffFunction ]]'
-                        my-decision='[[ myDecision ]]'
-                        others-bubbles='[[ othersBubbles ]]'
-                        enable-payoff-landscape
-                        max-decision='1'
-                    ></bubbles-graph>
-                </div>
-            </td>
-            <td>
-                <div class="bottomrow">
-                    <payoff-graph
-                        max-payoff='[[ maxPayoff ]]'
-                        duration='[[ periodLength ]]'
-                        my-payoff='[[ payoff ]]'>
-                    </payoff-graph>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div id="slider-container">
-                    <input
-                        id="slider"
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        on-change="_sliderValueChanged"
-                        disabled="{{ !_isPeriodRunning }}">
-                </div>
-            </td>
-        </tr>
-    </table>
-    <div>
+    <div class="grid">
+        <div class="row">
+            <div class="cell">
+
+            </div>
+            <div class="cell">
+                <strategy-graph
+                    my-decision='[[ myDecision ]]'
+                    other-decisions='[[ otherDecisions ]]'
+                    duration='[[ periodLength ]]'
+                ></strategy-graph>
+            </div>
+        </div>
+        <div class="row">
+            <div class="cell">
+                <bubbles-graph
+                    other-decisions='[[ otherDecisions ]]'
+                    max-payoff='[[ maxPayoff ]]'
+                    payoff-function='[[ payoffFunction ]]'
+                    my-decision='[[ myDecision ]]'
+                    others-bubbles='[[ othersBubbles ]]'
+                    enable-payoff-landscape
+                    max-decision='1'
+                ></bubbles-graph>
+            </div>
+            <div class="cell">
+                <payoff-graph
+                    max-payoff='[[ maxPayoff ]]'
+                    duration='[[ periodLength ]]'
+                    my-payoff='[[ payoff ]]'
+                ></payoff-graph>
+            </div>
+        </div>
+        <div class="row">
+            <div class="cell">
+                <input
+                    id="slider"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    on-change="_sliderValueChanged"
+                    disabled="{{ !_isPeriodRunning }}">
+            </div>
+            <div class="cell">
+
+            </div>
+        </div>
     </div>
 </template>
 <script>

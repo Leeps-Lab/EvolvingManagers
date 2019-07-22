@@ -3,7 +3,8 @@
 <dom-module id='strategy-graph'>
 <template>
     <style>
-        canvas {
+        canvas, :host {
+            display: inline-block;
             width: 100%;
             height: 100%;
         }
@@ -32,21 +33,19 @@
         observers: [
             '_addDecisionToHistory(otherDecisions.splices)',
         ],
-        ready() {
-            setTimeout(() => {
-                this.canvas = this.$.canvas;
-                this.width = this.canvas.clientWidth;
-                this.height = this.canvas.clientHeight;
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
+        attached() {
+            this.canvas = this.$.canvas;
+            this.width = this.canvas.clientWidth;
+            this.height = this.canvas.clientHeight;
+            this.canvas.width = this.width;
+            this.canvas.height = this.height;
 
-                this.yMin = 0;
-                this.yMax = 1;
-                this.yRange = this.yMax - this.yMin;
-                this.yScale = this.height / this.yRange;
+            this.yMin = 0;
+            this.yMax = 1;
+            this.yRange = this.yMax - this.yMin;
+            this.yScale = this.height / this.yRange;
 
-                this.ctx = this.canvas.getContext('2d');
-            });
+            this.ctx = this.canvas.getContext('2d');
         },
         roundStart() {
             setTimeout(() => {

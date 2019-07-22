@@ -3,7 +3,8 @@
 <dom-module id='bubbles-graph'>
 <template>
     <style>
-        canvas {
+        canvas, :host {
+            display: inline-block;
             width: 100%;
             height: 100%;
         }
@@ -46,6 +47,9 @@
         observers: [
             '_redrawGraph(otherDecisions)',
         ],
+        attached() {
+            this._recalculateBounds();
+        },
         _recalculateBounds() {
             this.canvas = this.$.canvas;
             this.width = this.canvas.clientWidth;
@@ -53,15 +57,17 @@
             this.canvas.width = this.width;
             this.canvas.height = this.height;
 
-            this.xMin = -0.06;
+            // the amount of space to the left of the y axis in pixels
+            const xPadding = 35;
             this.xMax = this.maxDecision * 1.02;
-            this.xRange = this.xMax - this.xMin;
-            this.yMin = 0 - this.maxPayoff * 0.1;
-            this.yMax = this.maxPayoff * 1.05;
-            this.yRange = this.yMax - this.yMin;
+            this.xScale = (this.width - xPadding) / this.xMax;
+            this.xMin = -xPadding / this.xScale;
 
-            this.xScale = this.width / this.xRange;
-            this.yScale = this.height / this.yRange;
+            // the amount of space below the x axis in pixels
+            const yPadding = 30;
+            this.yMax = this.maxPayoff * 1.05;
+            this.yScale = (this.height - yPadding) / this.yMax;
+            this.yMin = yPadding / this.yScale;
 
             this.ctx = this.canvas.getContext('2d');
 

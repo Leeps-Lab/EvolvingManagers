@@ -271,9 +271,9 @@
         ready() {
             this.slider = this.$.slider;
 
+            this.bubbles_graph = this.$$('bubbles-graph');
             // have to wait a frame to get DOM nodes for stuff in dom-ifs
             this.async(() => {
-                this.bubbles_graph = this.$$('bubbles-graph');
                 this.payoff_graph = this.$$('payoff-graph');
                 this.strategy_graph = this.$$('strategy-graph');
             })

@@ -138,7 +138,7 @@
 
             ctx.save();
 
-            const radius = 8;
+            const radius = 12;
             for(let i = 0; i < otherDecisions.length; i++) {
                 let payoff = 0;
                 if (this.othersBubbles === 'payoff') {
@@ -150,7 +150,12 @@
                     ctx.beginPath();
                     const x = (otherDecisions[i] - this.xMin) * this.xScale;
                     const y = (this.yMax - payoff) * this.yScale;
-                    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+
+                    // draw an X
+                    ctx.moveTo(x-radius/2, y-radius/2);
+                    ctx.lineTo(x+radius/2, y+radius/2);
+                    ctx.moveTo(x-radius/2, y+radius/2);
+                    ctx.lineTo(x+radius/2, y-radius/2);
 
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = OTHER_COLORS[i];

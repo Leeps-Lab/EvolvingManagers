@@ -25,6 +25,8 @@ def parse_config(config_file):
             'initial_decision': float(row['initial_decision']),
             'window_size': int(row['window_size']),
             'max_evolve_prob': float(row['max_evolve_prob']),
+            'show_payoff_graph': row['show_payoff_graph'].lower() == 'true',
+            'show_strategy_graph': row['show_strategy_graph'].lower() == 'true',
         })
     return rounds
 
@@ -59,6 +61,12 @@ class Subsession(BaseSubsession):
 
     def bubble_style(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['bubble_style']
+    
+    def show_payoff_graph(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['show_payoff_graph']
+
+    def show_strategy_graph(self):
+        return parse_config(self.session.config['config_file'])[self.round_number-1]['show_strategy_graph']
 
 
 class Group(DecisionGroup):

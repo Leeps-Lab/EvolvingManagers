@@ -1,10 +1,6 @@
 {% extends "otree_redwood/Page.html" %}
 {% load staticfiles otree %}
 
-{% block title %}
-    Your Decision
-{% endblock %}
-
 {% block scripts %}
     <link
         rel="import"
@@ -13,6 +9,16 @@
 
 {% block content %}
 
+    <style>
+        /* this styles otree's page header
+           remove margin and padding, and set height so that EM component is centered vertically */
+        div.page-header {
+            height: 5vh;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
      <evolving-managers
          initial-decision='{{ player.initial_decision }}'
          period-length='{{ player.group.period_length }}'
@@ -20,6 +26,12 @@
          c-var='{{ player.subsession.c_var }}'
          gamma-var='{{ player.subsession.gamma_var }}'
          k-var='{{ player.group.window_size }}'
+         {% if player.subsession.show_payoff_graph %}
+         show-payoff-graph
+         {% endif %}
+         {% if player.subsession.show_strategy_graph %}
+         show-strategy-graph
+         {% endif %}
      ></evolving-managers>
 
 {% endblock %}

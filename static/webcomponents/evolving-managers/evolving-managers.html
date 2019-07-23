@@ -133,7 +133,10 @@
                         Window width k: [[ kVar ]]
                     </span>
                     <span>
-                        Current payoffs: [[ _toFixed(payoff) ]]
+                        Current payoff: [[ _toFixed(payoff) ]]
+                    </span>
+                    <span>
+                        Cumulative payoffs: [[ _toFixed(_cumulativePayoffs) ]]
                     </span>
                 </div>
             </div>
@@ -261,6 +264,9 @@
             _isPeriodRunning: {
                 type: Boolean
             },
+            _cumulativePayoffs: {
+                type: Number,
+            },
         },
         ready() {
             this.slider = this.$.slider;
@@ -286,8 +292,6 @@
 			};
         },
         roundStart() {
-            this.start_time = performance.now();
-
             this.bubbles_graph.roundStart();
 
             if (this.payoff_graph) {
@@ -295,6 +299,19 @@
             }
             if (this.strategy_graph) {
                 this.strategy_graph.roundStart();
+            }
+
+            this._cumulativePayoffs = 0;
+            this.last_time = performance.now();
+            requestAnimationFrame(this._updateCumulativePayoff.bind(this));
+        },
+        _updateCumulativePayoff(now) {
+            if(this.payoff) {
+                this._cumulativePayoffs += this.payoff * (now - this.last_time) / 1000;
+            }
+            this.last_time = now;
+            if (this._isPeriodRunning) {
+                requestAnimationFrame(this._updateCumulativePayoff.bind(this));
             }
         },
         _onSubperiodStart(event) {

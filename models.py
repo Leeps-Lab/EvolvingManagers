@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from jsonfield import JSONField
 from otree_redwood.models import DecisionGroup, Event
-from otree_redwood.utils import DiscreteEventEmitter
+from .utils import DiscreteEventEmitter
 from django.contrib.contenttypes.models import ContentType
 
 def parse_config(config_file):
@@ -27,6 +27,7 @@ def parse_config(config_file):
             'max_evolve_prob': float(row['max_evolve_prob']),
             'show_payoff_graph': row['show_payoff_graph'].lower() == 'true',
             'show_strategy_graph': row['show_strategy_graph'].lower() == 'true',
+            'discrete_time_decision_periods': int(row['discrete_time_decision_periods']),
         })
     return rounds
 
@@ -71,6 +72,12 @@ class Subsession(BaseSubsession):
 
 class Group(DecisionGroup):
 
+    # these are NOT subperiods as they're defined elsewhere in this project
+    # these are redwood's notion of superiods and only serve to make decisions happen in discrete time
+    def num_subperiods(self):
+        num_subp = parse_config(self.session.config['config_file'])[self.round_number-1]['discrete_time_decision_periods']
+        return num_subp
+
     def num_rounds(self):
         return len(parse_config(self.session.config['config_file']))
     
@@ -86,9 +93,6 @@ class Group(DecisionGroup):
     def max_evolve_prob(self):
         return parse_config(self.session.config['config_file'])[self.round_number-1]['max_evolve_prob']
     
-    def mean_matching(self):
-        return True
-
     def update_last_subperiod_payoffs(self):
         # get the most recent subperiod start event for this group
         subperiod_start = Event.objects.filter(

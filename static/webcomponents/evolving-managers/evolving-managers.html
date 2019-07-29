@@ -29,7 +29,8 @@
     </redwood-period>
 	<redwood-decision
 		initial-decision="[[ initialDecision ]]"
-		my-decision="{{ myDecision }}"
+        my-current-decision="{{ myDecision }}"
+        my-decision="[[ _sliderValue ]]"
 		group-decisions="{{ groupDecisions }}"
 		max-per-second="10">
     </redwood-decision>
@@ -81,10 +82,12 @@
             margin: 2px;
         }
 
+        /* left column */
         .cell:nth-child(1) {
             flex: 3 3 0;
         }
 
+        /* right column */
         .cell:nth-child(2) {
             flex: 1 1 0;
         }
@@ -118,7 +121,7 @@
             <div class="cell">
                 <div class="infobox">
                     <span>
-                        Your current w: [[ _toFixed(_previousPayoff) ]]
+                        Your w: [[ _toFixed(_previousPayoff) ]]
                     </span>
                     <span>
                         Max w: [[ _toFixed(_maxPreviousPayoff) ]]
@@ -127,10 +130,10 @@
                         Average w: [[ _toFixed(_avgPreviousPayoff) ]]
                     </span>
                     <span>
-                        Your current A: [[ _toFixed(_aVar) ]]
+                        Your A: [[ _toFixed(_aVar) ]]
                     </span>
                     <span>
-                        Window width k: [[ kVar ]]
+                        k: [[ kVar ]]
                     </span>
                     <span>
                         Current payoff: [[ _toFixed(payoff) ]]
@@ -237,7 +240,7 @@
             },
             payoff: {
                 type: Number,
-                computed: '_computeMyPayoff(otherDecisions, _aVar)',
+                computed: '_computeMyPayoff(myDecision, otherDecisions, _aVar)',
             },
             cVar: {
                 type: Number,
@@ -278,7 +281,7 @@
                 this.strategy_graph = this.$$('strategy-graph');
             })
 
-            this.slider.value = this.myDecision;
+            this.slider.value = this.initialDecision;
 
             const self = this;
 			this.payoffFunction = function(myDecision, otherDecisions) {
@@ -326,10 +329,10 @@
             this.bubbles_graph._redrawGraph();
         },
         _sliderValueChanged(event) {
-            this.myDecision = parseFloat(event.target.value);
+            this._sliderValue = parseFloat(event.target.value);
         },
-        _computeMyPayoff(otherDecisions, _aVar) {
-            return this.payoffFunction(this.myDecision, otherDecisions);
+        _computeMyPayoff(myDecision, otherDecisions, _aVar) {
+            return this.payoffFunction(myDecision, otherDecisions);
         },
 		_getOtherDecisions(groupDecisions) {
             const pcodes = Object.keys(groupDecisions);

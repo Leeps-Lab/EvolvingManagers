@@ -45,7 +45,7 @@
             },
         },
         observers: [
-            '_redrawGraph(otherDecisions)',
+            '_redrawGraph(myDecision, otherDecisions)',
         ],
         attached() {
             this._recalculateBounds();

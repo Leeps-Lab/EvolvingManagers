@@ -33,22 +33,24 @@
         observers: [
             '_addDecisionToHistory(otherDecisions.splices)',
         ],
-        attached() {
-            this.canvas = this.$.canvas;
-            this.width = this.canvas.clientWidth;
-            this.height = this.canvas.clientHeight;
-            this.canvas.width = this.width;
-            this.canvas.height = this.height;
+        ready() {
+            this.async(() => {
+                this.canvas = this.$.canvas;
+                this.width = this.canvas.clientWidth;
+                this.height = this.canvas.clientHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
 
-            this.yMin = 0;
-            this.yMax = 1;
-            this.yRange = this.yMax - this.yMin;
-            this.yScale = this.height / this.yRange;
+                this.yMin = 0;
+                this.yMax = 1;
+                this.yRange = this.yMax - this.yMin;
+                this.yScale = this.height / this.yRange;
 
-            this.ctx = this.canvas.getContext('2d');
+                this.ctx = this.canvas.getContext('2d');
+            })
         },
         roundStart() {
-            setTimeout(() => {
+            this.async(() => {
                 this.start_time = performance.now();
 
                 this.xMin = this.start_time;

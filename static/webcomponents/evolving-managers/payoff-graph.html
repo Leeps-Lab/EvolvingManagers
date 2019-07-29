@@ -30,23 +30,25 @@
                 value: () => [],
             },
         },
-        attached() {
-            this.canvas = this.$.canvas;
-            this.width = this.canvas.clientWidth;
-            this.height = this.canvas.clientHeight;
-            this.canvas.width = this.width;
-            this.canvas.height = this.height;
+        ready() {
+            this.async(() => {
+                this.canvas = this.$.canvas;
+                this.width = this.canvas.clientWidth;
+                this.height = this.canvas.clientHeight;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
 
-            // the amount of space below the x axis in pixels
-            const yPadding = 30;
-            this.yMax = this.maxPayoff * 1.05;
-            this.yScale = (this.height - yPadding) / this.yMax;
-            this.yMin = yPadding / this.yScale;
-            this.ctx = this.canvas.getContext('2d');
-            this._drawXAxis();
+                // the amount of space below the x axis in pixels
+                const yPadding = 30;
+                this.yMax = this.maxPayoff * 1.05;
+                this.yScale = (this.height - yPadding) / this.yMax;
+                this.yMin = yPadding / this.yScale;
+                this.ctx = this.canvas.getContext('2d');
+                this._drawXAxis();
+            });
         },
         roundStart() {
-            window.setTimeout(() => {
+            this.async(() => {
                 this.start_time = performance.now();
                 this.xMin = this.start_time;
                 this.xMax = this.xMin + this.duration * 1000;
@@ -104,6 +106,7 @@
             ctx.restore();
         },
         _addPayoffToHistory(payoff) {
+            console.log(payoff)
             if (typeof(payoff) === "number") {
                 this.push('_payoffHistory', {
                     payoff: payoff,
